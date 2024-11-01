@@ -1,12 +1,13 @@
 local M = {}
 
-local default_config = {
-}
+local config = require('typstar.config')
+local excalidraw = require('typstar.excalidraw')
 
-M.config = default_config
+vim.api.nvim_create_user_command('TypstarInsertExcalidraw', excalidraw.insert_drawing, {})
+vim.api.nvim_create_user_command('TypstarOpenExcalidraw', excalidraw.open_drawing, {})
 
 M.setup = function(args)
-    M.config = vim.tbl_deep_extend("force", M.config, args or {})
+    config.merge_config(args)
 end
 
 return M
