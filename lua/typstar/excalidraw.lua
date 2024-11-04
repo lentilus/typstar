@@ -33,7 +33,7 @@ end
 function M.open_drawing()
     local line = vim.api.nvim_get_current_line()
     local path = vim.fn.expand('%:p:h') ..
-        '/' .. string.match(line, 'image%("(.*)' .. string.gsub(cfg.fileExtensionInserted, '%.', '%%%.')) ..
+        '/' .. string.match(line, '"(.*)' .. string.gsub(cfg.fileExtensionInserted, '%.', '%%%.')) ..
         '.excalidraw.md'
     launch_obsidian_open(path)
 end
