@@ -7,7 +7,17 @@ local default_config = {
         filename = 'drawing-%Y-%m-%d-%H-%M-%S',
         fileExtensionInserted = '.excalidraw.svg',
         obsidianOpenConfig = nil,
-    }
+    },
+    snippets = {
+        enable = true,
+        modules = {
+            'document',
+            'letters',
+            'math',
+            'matrix',
+            'visual',
+        }
+    },
 }
 
 function M.merge_config(args)
