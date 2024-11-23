@@ -60,8 +60,11 @@ local wrap_brackets = function(args, snippet, val)
 end
 
 for _, val in pairs(operations) do
-    table.insert(snippets, snip(val[1], val[2] .. '<>' .. val[3], { d(1, get_visual), extra_node }, math))
-    table.insert(snippets, snip('%s' .. val[1], val[2] .. '<>' .. val[3], { i(1, '1'), extra_node }, math))
+    table.insert(snippets, snip(val[1], val[2] .. '<>' .. val[3], { d(1, get_visual) }, math))
+    table.insert(snippets, snip('[%s$]' .. val[1], val[2] .. '<>' .. val[3], { i(1, '1') }, math))
+    table.insert(snippets,
+        snip('([%w]+)'
+            .. val[1], val[2] .. '<>' .. val[3], { cap(1) }, math, 900))
     table.insert(snippets,
         snip('(.*[%)|%]|%}])' .. val[1], '<>', { f(wrap_brackets, {}, { user_args = { val } }), nil }, math, 1100))
 end

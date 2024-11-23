@@ -1,12 +1,12 @@
 local M = {}
 local cfg = require('typstar.config').config.snippets
 local luasnip = require('luasnip')
-local fmta = require("luasnip.extras.fmt").fmta
+local fmta = require('luasnip.extras.fmt').fmta
 
-M.in_math = function() return vim.api.nvim_eval("typst#in_math()") == 1 end
-M.in_markup = function() return vim.api.nvim_eval("typst#in_markup()") == 1 end
-M.in_code = function() return vim.api.nvim_eval("typst#in_code()") == 1 end
-M.in_comment = function() return vim.api.nvim_eval("typst#in_comment()") == 1 end
+M.in_math = function() return vim.api.nvim_eval('typst#in_math()') == 1 end
+M.in_markup = function() return vim.api.nvim_eval('typst#in_markup()') == 1 end
+M.in_code = function() return vim.api.nvim_eval('typst#in_code()') == 1 end
+M.in_comment = function() return vim.api.nvim_eval('typst#in_comment()') == 1 end
 M.not_in_math = function() return not M.in_math() end
 M.not_in_markup = function() return not M.in_markup() end
 M.not_in_code = function() return not M.in_code() end

@@ -29,6 +29,6 @@ end
 
 return {
     start('dm', '$\n\t<>\n$', { i(1) }, markup),
-    snip('ll', ' $<>$ ', { i(1, '1+1') }, markup),
+    snip('ll', ' $<>$', { i(1, '1+1') }, markup),
     unpack(document_snippets),
 }
