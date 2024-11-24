@@ -11,7 +11,7 @@ M.not_in_math = function() return not M.in_math() end
 M.not_in_markup = function() return not M.in_markup() end
 M.not_in_code = function() return not M.in_code() end
 M.not_in_comment = function() return not M.in_comment() end
-
+M.snippets_toggle = true
 
 function M.cap(i)
     return luasnip.function_node(function(_, snip) return snip.captures[i] end)
@@ -34,12 +34,23 @@ function M.snip(trigger, expand, insert, condition, priority)
     return luasnip.snippet(
         { trig = trigger, regTrig = true, wordtrig = false, priority = priority, snippetType = 'autosnippet' },
         fmta(expand, { unpack(insert) }),
-        { condition = condition }
+        {
+            condition = function()
+                if not M.snippets_toggle then
+                    return false
+                end
+                return condition()
+            end
+        }
     )
 end
 
 function M.start_snip(trigger, expand, insert, condition, priority)
     return M.snip('^%s*' .. trigger, expand, insert, condition, priority)
+end
+
+function M.toggle_autosnippets()
+    M.snippets_toggle = not M.snippets_toggle
 end
 
 function M.setup()
