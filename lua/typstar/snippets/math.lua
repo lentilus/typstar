@@ -71,6 +71,11 @@ return {
     snip('oit', 'integral_(Omega}', {}, math),
     snip('dit', 'integral_{<>}', { i(1, 'Omega') }, math),
     snip('sm', 'sum_(<>)^(<>)', { i(1, 'i=0'), i(2, 'oo') }, math),
+
     snip('lm', 'lim <>', { i(1, 'a_n') }, math),
     snip('lim', 'lim_(<> ->> <>) <>', { i(1, 'n'), i(2, 'oo'), i(3, 'a_n') }, math),
+    snip('lim sup', 'limsup <>', { i(1, 'a_n') }, math),
+    snip('lim(_.*%-.*) sup', 'limsup<> <>', { cap(1), i(1, 'a_n') }, math),
+    snip('lim inf', 'liminf <>', { i(1, 'a_n') }, math),
+    snip('lim(_.*%-.*) inf', 'liminf<> <>', { cap(1), i(1, 'a_n') }, math),
 }
