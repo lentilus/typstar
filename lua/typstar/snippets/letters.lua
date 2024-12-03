@@ -29,7 +29,7 @@ local greek_letters = {
     { 'z', 'zeta' }, { 'Z', 'Zeta' },
 }
 local latin_letters = { 'f', 'u', 'v', 'w', 'y' } -- remaining ones are added dynamically
-local common_indices = { '%d+', 'i', 'j', 'k', 'n' }
+local common_indices = { '\\d+', 'i', 'j', 'k', 'n' }
 
 for _, letter in ipairs({ unpack(latin_letters) }) do
     table.insert(latin_letters, letter:upper())
@@ -40,7 +40,7 @@ local generate_index_snippets = function(letter)
         table.insert(letter_snippets,
             snip(letter .. '(' .. index .. ') ', letter .. '_(<>) ', { cap(1) }, math, 200))
         table.insert(letter_snippets,
-            snip('$' .. letter .. '$(' .. index .. ') ', '$' .. letter .. '_(<>)$ ', { cap(1) }, markup, 200))
+            snip('\\$' .. letter .. '\\$(' .. index .. ') ', '$' .. letter .. '_(<>)$ ', { cap(1) }, markup, 200))
     end
 end
 

@@ -75,8 +75,6 @@ return {
 
     snip('lm', 'lim <>', { i(1, 'a_n') }, math),
     snip('lim', 'lim_(<> ->> <>) <>', { i(1, 'n'), i(2, 'oo'), i(3, 'a_n') }, math),
-    snip('lim sup', 'limsup <>', { i(1, 'a_n') }, math),
-    snip('lim(_.*%-.*) sup', 'limsup<> <>', { cap(1), i(1, 'a_n') }, math),
-    snip('lim inf', 'liminf <>', { i(1, 'a_n') }, math),
-    snip('lim(_.*%-.*) inf', 'liminf<> <>', { cap(1), i(1, 'a_n') }, math),
+    snip('lim (sup|inf)', 'lim<> <>', { cap(1), i(1, 'a_n') }, math),
+    snip('lim(_.*-.*) (sup|inf)', 'lim<><> <>', { cap(2), cap(1), i(1, 'a_n') }, math),
 }

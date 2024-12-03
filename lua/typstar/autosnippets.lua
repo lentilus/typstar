@@ -32,7 +32,14 @@ end
 function M.snip(trigger, expand, insert, condition, priority)
     priority = priority or 1000
     return luasnip.snippet(
-        { trig = trigger, regTrig = true, wordtrig = false, priority = priority, snippetType = 'autosnippet' },
+        {
+            trig = trigger,
+            trigEngine = 'ecma',
+            regTrig = true,
+            wordtrig = false,
+            priority = priority,
+            snippetType = 'autosnippet'
+        },
         fmta(expand, { unpack(insert) }),
         {
             condition = function()
@@ -46,7 +53,7 @@ function M.snip(trigger, expand, insert, condition, priority)
 end
 
 function M.start_snip(trigger, expand, insert, condition, priority)
-    return M.snip('^%s*' .. trigger, expand, insert, condition, priority)
+    return M.snip('^\\s*' .. trigger, expand, insert, condition, priority)
 end
 
 function M.toggle_autosnippets()
