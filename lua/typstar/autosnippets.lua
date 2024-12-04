@@ -2,7 +2,15 @@ local M = {}
 local cfg = require('typstar.config').config.snippets
 local luasnip = require('luasnip')
 local fmta = require('luasnip.extras.fmt').fmta
+local lsengines = require('luasnip.nodes.util.trig_engines')
 
+local last_keystroke_time = nil
+vim.api.nvim_create_autocmd("TextChangedI", {
+    callback = function()
+        last_keystroke_time = vim.loop.now()
+    end,
+})
+local lexical_result_cache = {}
 M.in_math = function() return vim.api.nvim_eval('typst#in_math()') == 1 end
 M.in_markup = function() return vim.api.nvim_eval('typst#in_markup()') == 1 end
 M.in_code = function() return vim.api.nvim_eval('typst#in_code()') == 1 end
@@ -34,7 +42,8 @@ function M.snip(trigger, expand, insert, condition, priority)
     return luasnip.snippet(
         {
             trig = trigger,
-            trigEngine = 'ecma',
+            trigEngine = M.engine,
+            trigEngineOpts = { condition = condition },
             regTrig = true,
             wordtrig = false,
             priority = priority,
@@ -42,12 +51,7 @@ function M.snip(trigger, expand, insert, condition, priority)
         },
         fmta(expand, { unpack(insert) }),
         {
-            condition = function()
-                if not M.snippets_toggle then
-                    return false
-                end
-                return condition()
-            end
+            condition = function() return M.snippets_toggle end
         }
     )
 end
@@ -56,8 +60,28 @@ function M.start_snip(trigger, expand, insert, condition, priority)
     return M.snip('^\\s*' .. trigger, expand, insert, condition, priority)
 end
 
+function M.engine(trigger, opts)
+    local base_engine = lsengines.ecma(trigger, opts)
+    local condition = function()
+        local cached = lexical_result_cache[opts.condition]
+        if cached ~= nil and cached[1] == last_keystroke_time then
+            return cached[2]
+        end
+        local result = opts.condition()
+        lexical_result_cache[opts.condition] = { last_keystroke_time, result }
+        return result
+    end
+    return function(line, trig)
+        if not M.snippets_toggle or not condition() then
+            return nil
+        end
+        return base_engine(line, trig)
+    end
+end
+
 function M.toggle_autosnippets()
     M.snippets_toggle = not M.snippets_toggle
+    print(string.format('%sabled typstar autosnippets', M.snippets_toggle and 'En' or 'Dis'))
 end
 
 function M.setup()
