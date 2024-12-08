@@ -20,7 +20,7 @@ function M.run_shell_command(cmd)
     vim.fn.jobstart(cmd)
 end
 
-function M.cursor_inside_treesitter_query(query, cursor)
+function M.cursor_within_treesitter_query(query, match_tolerance, cursor)
     cursor = cursor or M.get_cursor_pos()
     local bufnr = vim.api.nvim_get_current_buf()
     local root = ts.get_parser(bufnr):parse()[1]:root()
@@ -28,7 +28,8 @@ function M.cursor_inside_treesitter_query(query, cursor)
         if match then
             local start_row, start_col, _, _ = match[1]:range()
             local _, _, end_row, end_col     = match[#match]:range()
-            local matched                    = M.cursor_inside_coords(cursor, start_row, end_row, start_col, end_col)
+            local matched                    = M.cursor_within_coords(cursor, start_row, end_row, start_col, end_col,
+                match_tolerance)
             if matched then
                 return true
             end
@@ -37,11 +38,11 @@ function M.cursor_inside_treesitter_query(query, cursor)
     return false
 end
 
-function M.cursor_inside_coords(cursor, start_row, end_row, start_col, end_col)
+function M.cursor_within_coords(cursor, start_row, end_row, start_col, end_col, match_tolerance)
     if start_row <= cursor[1] and end_row >= cursor[1] then
-        if start_row == cursor[1] and start_col > cursor[2] then
+        if start_row == cursor[1] and start_col - match_tolerance >= cursor[2] then
             return false
-        elseif end_row == cursor[1] and end_col < cursor[2] then
+        elseif end_row == cursor[1] and end_col + match_tolerance <= cursor[2] then
             return false
         end
         return true

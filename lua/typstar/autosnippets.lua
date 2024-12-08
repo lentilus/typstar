@@ -19,10 +19,10 @@ local ts_string_query = ts.query.parse('typst', '(string) @string')
 
 M.in_math = function()
     local cursor = utils.get_cursor_pos()
-    return utils.cursor_inside_treesitter_query(ts_math_query, cursor)
-        and not utils.cursor_inside_treesitter_query(ts_string_query, cursor)
+    return utils.cursor_within_treesitter_query(ts_math_query, 0, cursor)
+        and not utils.cursor_within_treesitter_query(ts_string_query, 0, cursor)
 end
-M.in_markup = function() return utils.cursor_inside_treesitter_query(ts_markup_query) end
+M.in_markup = function() return utils.cursor_within_treesitter_query(ts_markup_query, 2) end
 M.not_in_math = function() return not M.in_math() end
 M.not_in_markup = function() return not M.in_markup() end
 M.snippets_toggle = true
@@ -50,8 +50,6 @@ function M.snip(trigger, expand, insert, condition, priority)
             trig = trigger,
             trigEngine = M.engine,
             trigEngineOpts = { condition = condition },
-            regTrig = true,
-            wordtrig = false,
             priority = priority,
             snippetType = 'autosnippet'
         },
