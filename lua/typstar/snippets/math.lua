@@ -62,6 +62,8 @@ return {
     snip('iso', 'tilde.equiv ', {}, math),
     snip('rrn', 'RR^n ', {}, math),
     snip('cc', 'cases(\n\t<>\n)\\', { i(1, '1') }, math),
+    snip('pi', 'pi ', {}, math),
+    snip('in', 'in ', {}, math),
     snip('(.*)iv', '<>^(-1)', { cap(1) }, math),
     snip('(.*)sr', '<>^(2)', { cap(1) }, math),
     snip('(.*)rd', '<>^(<>)', { cap(1), i(1, 'n') }, math),
@@ -74,8 +76,6 @@ return {
 
     snip('lm', 'lim <>', { i(1, 'a_n') }, math),
     snip('lim', 'lim_(<> ->> <>) <>', { i(1, 'n'), i(2, 'oo'), i(3, 'a_n') }, math),
-    snip('lim sup', 'limsup <>', { i(1, 'a_n') }, math),
-    snip('lim(_.*%-.*) sup', 'limsup<> <>', { cap(1), i(1, 'a_n') }, math),
-    snip('lim inf', 'liminf <>', { i(1, 'a_n') }, math),
-    snip('lim(_.*%-.*) inf', 'liminf<> <>', { cap(1), i(1, 'a_n') }, math),
+    snip('lim (sup|inf)', 'lim<> <>', { cap(1), i(1, 'a_n') }, math),
+    snip('lim(_.*-.*) (sup|inf)', 'lim<><> <>', { cap(2), cap(1), i(1, 'a_n') }, math),
 }

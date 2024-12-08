@@ -1,7 +1,11 @@
 local helper = require('typstar.autosnippets')
 local snip = helper.snip
+local cap = helper.cap
+local math = helper.in_math
+local markup = helper.in_markup
 
-local letters = {
+local letter_snippets = {}
+local greek_letters = {
     { 'a', 'alpha' }, { 'A', 'Alpha' },
     { 'b', 'beta' }, { 'B', 'Beta' },
     { 'c', 'chi' }, { 'C', 'Chi' },
@@ -24,13 +28,32 @@ local letters = {
     { 'x', 'xi' }, { 'X', 'xi' },
     { 'z', 'zeta' }, { 'Z', 'Zeta' },
 }
+local latin_letters = { 'f', 'u', 'v', 'w', 'y' } -- remaining ones are added dynamically
+local common_indices = { '\\d+', 'i', 'j', 'k', 'n' }
 
-local letter_snippets = {}
+for _, letter in ipairs({ unpack(latin_letters) }) do
+    table.insert(latin_letters, letter:upper())
+end
 
-for _, val in pairs(letters) do
-    table.insert(letter_snippets, snip(';' .. val[1], val[2], {}, helper.in_math))
-    table.insert(letter_snippets, snip(';' .. val[1], '$' .. val[2] .. '$ ', {}, helper.in_markup))
-    table.insert(letter_snippets, snip(':' .. val[1], '$' .. val[1] .. '$ ', {}, helper.in_markup))
+local generate_index_snippets = function(letter)
+    for _, index in pairs(common_indices) do
+        table.insert(letter_snippets,
+            snip(letter .. '(' .. index .. ') ', letter .. '_(<>) ', { cap(1) }, math, 200))
+        table.insert(letter_snippets,
+            snip('\\$' .. letter .. '\\$(' .. index .. ') ', '$' .. letter .. '_(<>)$ ', { cap(1) }, markup, 200))
+    end
+end
+
+for _, val in pairs(greek_letters) do
+    table.insert(letter_snippets, snip(';' .. val[1], val[2], {}, math))
+    table.insert(letter_snippets, snip(';' .. val[1], '$' .. val[2] .. '$ ', {}, markup))
+    generate_index_snippets(val[2])
+    table.insert(latin_letters, val[1])
+end
+
+for _, letter in pairs(latin_letters) do
+    generate_index_snippets(letter)
+    table.insert(letter_snippets, snip(':' .. letter, '$' .. letter .. '$ ', {}, markup))
 end
 
 return {

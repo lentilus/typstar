@@ -1,16 +1,30 @@
 local M = {}
 local cfg = require('typstar.config').config.snippets
+local utils = require('typstar.utils')
 local luasnip = require('luasnip')
 local fmta = require('luasnip.extras.fmt').fmta
+local lsengines = require('luasnip.nodes.util.trig_engines')
+local ts = vim.treesitter
 
-M.in_math = function() return vim.api.nvim_eval('typst#in_math()') == 1 end
-M.in_markup = function() return vim.api.nvim_eval('typst#in_markup()') == 1 end
-M.in_code = function() return vim.api.nvim_eval('typst#in_code()') == 1 end
-M.in_comment = function() return vim.api.nvim_eval('typst#in_comment()') == 1 end
+local last_keystroke_time = nil
+vim.api.nvim_create_autocmd('TextChangedI', {
+    callback = function()
+        last_keystroke_time = vim.loop.now()
+    end,
+})
+local lexical_result_cache = {}
+local ts_markup_query = ts.query.parse('typst', '(text) @markup')
+local ts_math_query = ts.query.parse('typst', '(math) @math')
+local ts_string_query = ts.query.parse('typst', '(string) @string')
+
+M.in_math = function()
+    local cursor = utils.get_cursor_pos()
+    return utils.cursor_within_treesitter_query(ts_math_query, 0, cursor)
+        and not utils.cursor_within_treesitter_query(ts_string_query, 0, cursor)
+end
+M.in_markup = function() return utils.cursor_within_treesitter_query(ts_markup_query, 2) end
 M.not_in_math = function() return not M.in_math() end
 M.not_in_markup = function() return not M.in_markup() end
-M.not_in_code = function() return not M.in_code() end
-M.not_in_comment = function() return not M.in_comment() end
 M.snippets_toggle = true
 
 function M.cap(i)
@@ -32,25 +46,46 @@ end
 function M.snip(trigger, expand, insert, condition, priority)
     priority = priority or 1000
     return luasnip.snippet(
-        { trig = trigger, regTrig = true, wordtrig = false, priority = priority, snippetType = 'autosnippet' },
+        {
+            trig = trigger,
+            trigEngine = M.engine,
+            trigEngineOpts = { condition = condition },
+            priority = priority,
+            snippetType = 'autosnippet'
+        },
         fmta(expand, { unpack(insert) }),
         {
-            condition = function()
-                if not M.snippets_toggle then
-                    return false
-                end
-                return condition()
-            end
+            condition = function() return M.snippets_toggle end
         }
     )
 end
 
 function M.start_snip(trigger, expand, insert, condition, priority)
-    return M.snip('^%s*' .. trigger, expand, insert, condition, priority)
+    return M.snip('^\\s*' .. trigger, expand, insert, condition, priority)
+end
+
+function M.engine(trigger, opts)
+    local base_engine = lsengines.ecma(trigger, opts)
+    local condition = function()
+        local cached = lexical_result_cache[opts.condition]
+        if cached ~= nil and cached[1] == last_keystroke_time then
+            return cached[2]
+        end
+        local result = opts.condition()
+        lexical_result_cache[opts.condition] = { last_keystroke_time, result }
+        return result
+    end
+    return function(line, trig)
+        if not M.snippets_toggle or not condition() then
+            return nil
+        end
+        return base_engine(line, trig)
+    end
 end
 
 function M.toggle_autosnippets()
     M.snippets_toggle = not M.snippets_toggle
+    print(string.format('%sabled typstar autosnippets', M.snippets_toggle and 'En' or 'Dis'))
 end
 
 function M.setup()
