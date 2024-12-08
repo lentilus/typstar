@@ -14,7 +14,7 @@ local operations = { -- boolean denotes whether an additional layer of () bracke
     { 'vi',  '1/(',         ')', true },
     { 'bb',  '(',           ')', false },
     { 'sq',  '[',           ']', true },
-    { 'abs', '|',           '|', false },
+    { 'abs', 'abs(',        ')', false },
     { 'ul',  'underline(',  ')', false },
     { 'ol',  'overline(',   ')', false },
     { 'ub',  'underbrace(', ')', false },

@@ -1,7 +1,14 @@
 local M = {}
+local ts = vim.treesitter
+
+function M.get_cursor_pos()
+    local cursor_row, cursor_col = unpack(vim.api.nvim_win_get_cursor(0))
+    cursor_row = cursor_row - 1
+    return { cursor_row, cursor_col }
+end
 
 function M.insert_snippet(snip)
-    local line_num = vim.fn.getcurpos()[2]
+    local line_num = M.get_cursor_pos()[1] + 1
     local lines = {}
     for line in snip:gmatch '[^\r\n]+' do
         table.insert(lines, line)
@@ -11,6 +18,35 @@ end
 
 function M.run_shell_command(cmd)
     vim.fn.jobstart(cmd)
+end
+
+function M.cursor_inside_treesitter_query(query, cursor)
+    cursor = cursor or M.get_cursor_pos()
+    local bufnr = vim.api.nvim_get_current_buf()
+    local root = ts.get_parser(bufnr):parse()[1]:root()
+    for _, match, _ in query:iter_matches(root, bufnr, cursor[1], cursor[1] + 1) do
+        if match then
+            local start_row, start_col, _, _ = match[1]:range()
+            local _, _, end_row, end_col     = match[#match]:range()
+            local matched                    = M.cursor_inside_coords(cursor, start_row, end_row, start_col, end_col)
+            if matched then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+function M.cursor_inside_coords(cursor, start_row, end_row, start_col, end_col)
+    if start_row <= cursor[1] and end_row >= cursor[1] then
+        if start_row == cursor[1] and start_col > cursor[2] then
+            return false
+        elseif end_row == cursor[1] and end_col < cursor[2] then
+            return false
+        end
+        return true
+    end
+    return false
 end
 
 return M
