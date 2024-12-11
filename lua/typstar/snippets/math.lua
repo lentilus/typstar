@@ -65,8 +65,9 @@ return {
     snip('pi', 'pi ', {}, math),
     snip('in', 'in ', {}, math),
     snip('(.*)iv', '<>^(-1)', { cap(1) }, math),
-    snip('(.*)sr', '<>^(2)', { cap(1) }, math),
-    snip('(.*)rd', '<>^(<>)', { cap(1), i(1, 'n') }, math),
+    snip('(.*)sr', '<>^2', { cap(1) }, math),
+    snip('(.*)jj', '<>_(<>)', { cap(1), i(1, 'n') }, math),
+    snip('(.*)kk', '<>^(<>)', { cap(1), i(1, 'n') }, math),
 
     snip('ddx', '(d <>)(d <>)', { i(1, 'f'), i(2, 'x') }, math),
     snip('it', 'integral_(<>)^(<>)', { i(1, 'a'), i(2, 'b') }, math),

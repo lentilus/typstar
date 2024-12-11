@@ -26,7 +26,7 @@ function M.insert_drawing()
     local filename = os.date(cfg.filename)
     local path = assets_dir .. '/' .. filename .. '.excalidraw.md'
     local path_inserted = cfg.assetsDir .. '/' .. filename .. cfg.fileExtensionInserted
-    utils.insert_snippet(string.format(affix, path_inserted))
+    utils.insert_text_block(string.format(affix, path_inserted))
     launch_obsidian_open(path)
 end
 

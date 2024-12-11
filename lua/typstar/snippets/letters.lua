@@ -38,9 +38,9 @@ end
 local generate_index_snippets = function(letter)
     for _, index in pairs(common_indices) do
         table.insert(letter_snippets,
-            snip(letter .. '(' .. index .. ') ', letter .. '_(<>) ', { cap(1) }, math, 200))
+            snip(letter .. '(' .. index .. ') ', letter .. '_<> ', { cap(1) }, math, 200))
         table.insert(letter_snippets,
-            snip('\\$' .. letter .. '\\$(' .. index .. ') ', '$' .. letter .. '_(<>)$ ', { cap(1) }, markup, 200))
+            snip('\\$' .. letter .. '\\$(' .. index .. ') ', '$' .. letter .. '_<>$ ', { cap(1) }, markup, 200))
     end
 end
 
