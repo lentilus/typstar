@@ -19,7 +19,6 @@ return {
     snip('een', 'exists epsilon>>0 ', {}, math),
 
     -- boolean logic
-    snip('an', 'and ', {}, math),
     snip('no', 'not ', {}, math),
 
     -- relations
@@ -52,7 +51,7 @@ return {
     snip('nn', 'sect ', {}, math),
     snip('uu', 'union ', {}, math),
     snip('bnn', 'sect.big ', {}, math, 1100),
-    snip('buu', 'untion.big ', {}, math, 1100),
+    snip('buu', 'union.big ', {}, math, 1100),
     snip('swo', 'without ', {}, math),
 
     -- misc
@@ -62,8 +61,6 @@ return {
     snip('iso', 'tilde.equiv ', {}, math),
     snip('rrn', 'RR^n ', {}, math),
     snip('cc', 'cases(\n\t<>\n)\\', { i(1, '1') }, math),
-    snip('pi', 'pi ', {}, math),
-    snip('in', 'in ', {}, math),
     snip('(.*)iv', '<>^(-1)', { cap(1) }, math),
     snip('(.*)sr', '<>^2', { cap(1) }, math),
     snip('(.*)jj', '<>_(<>)', { cap(1), i(1, 'n') }, math),

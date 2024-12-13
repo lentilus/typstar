@@ -1,60 +1,92 @@
+local ls = require('luasnip')
+local d = ls.dynamic_node
+local s = ls.snippet_node
+local t = ls.text_node
 local helper = require('typstar.autosnippets')
 local snip = helper.snip
 local cap = helper.cap
 local math = helper.in_math
 local markup = helper.in_markup
 
+
 local letter_snippets = {}
-local greek_letters = {
-    { 'a', 'alpha' }, { 'A', 'Alpha' },
-    { 'b', 'beta' }, { 'B', 'Beta' },
-    { 'c', 'chi' }, { 'C', 'Chi' },
-    { 'd', 'delta' }, { 'D', 'Delta' },
-    { 'e', 'epsilon' }, { 'E', 'Epsilon' },
-    { 'g', 'gamma' }, { 'G', 'Gamma' },
-    { 'h', 'phi' }, { 'H', 'Phi' },
-    { 'i', 'iotta' }, { 'I', 'Iotta' },
-    { 'j', 'theta' }, { 'J', 'Theta' },
-    { 'k', 'kappa' }, { 'K', 'Kappa' },
-    { 'l', 'lambda' }, { 'L', 'Lambda' },
-    { 'm', 'mu' }, { 'M', 'Mu' },
-    { 'n', 'nu' }, { 'N', 'Nu' },
-    { 'o', 'omega' }, { 'O', 'Omega' },
-    { 'p', 'pi' }, { 'P', 'Pi' },
-    { 'q', 'eta' }, { 'Q', 'Eta' },
-    { 'r', 'rho' }, { 'R', 'Rho' },
-    { 's', 'sigma' }, { 'S', 'Sigma' },
-    { 't', 'tau' }, { 'T', 'Tau' },
-    { 'x', 'xi' }, { 'X', 'xi' },
-    { 'z', 'zeta' }, { 'Z', 'Zeta' },
+local greek_letters_map = {
+    ['a'] = 'alpha',
+    ['b'] = 'beta',
+    ['c'] = 'chi',
+    ['d'] = 'delta',
+    ['e'] = 'epsilon',
+    ['g'] = 'gamma',
+    ['h'] = 'phi',
+    ['i'] = 'iotta',
+    ['j'] = 'theta',
+    ['k'] = 'kappa',
+    ['l'] = 'lambda',
+    ['m'] = 'mu',
+    ['n'] = 'nu',
+    ['o'] = 'omega',
+    ['p'] = 'pi',
+    ['q'] = 'eta',
+    ['r'] = 'rho',
+    ['s'] = 'sigma',
+    ['t'] = 'tau',
+    ['x'] = 'xi',
+    ['z'] = 'zeta',
 }
-local latin_letters = { 'f', 'u', 'v', 'w', 'y' } -- remaining ones are added dynamically
-local common_indices = { '\\d+', 'i', 'j', 'k', 'n' }
+local greek_letters = {}
+local greek_keys = {}
+local common_indices = { '\\d+', '[i-n]' }
+local index_conflicts = { 'in', 'pi', 'xi' }
+local index_conflicts_set = {}
+local trigger_latin = '[A-Za-z0-9]'
+local trigger_greek = ''
+local trigger_index_pre = ''
+local trigger_index_post = ''
 
-for _, letter in ipairs({ unpack(latin_letters) }) do
-    table.insert(latin_letters, letter:upper())
+local upper_first = function(str)
+    return str:sub(1, 1):upper() .. str:sub(2, -1)
 end
 
-local generate_index_snippets = function(letter)
-    for _, index in pairs(common_indices) do
-        table.insert(letter_snippets,
-            snip(letter .. '(' .. index .. ') ', letter .. '_<> ', { cap(1) }, math, 200))
-        table.insert(letter_snippets,
-            snip('\\$' .. letter .. '\\$(' .. index .. ') ', '$' .. letter .. '_<>$ ', { cap(1) }, markup, 200))
+local greek_full = {}
+for latin, greek in pairs(greek_letters_map) do
+    greek_full[latin] = greek
+    greek_full[latin:upper()] = upper_first(greek)
+    table.insert(greek_letters, greek)
+    table.insert(greek_letters, upper_first(greek))
+    table.insert(greek_keys, latin)
+    table.insert(greek_keys, latin:upper())
+end
+
+for _, conflict in ipairs(index_conflicts) do
+    index_conflicts_set[conflict] = true
+end
+
+greek_letters_map = greek_full
+trigger_greek = table.concat(greek_keys, '|')
+trigger_index_pre = trigger_latin .. '|' .. table.concat(greek_letters, '|')
+trigger_index_post = table.concat(common_indices, '|')
+
+local get_greek = function(_, snippet)
+    return s(nil, t(greek_letters_map[snippet.captures[1]]))
+end
+
+local get_index = function(_, snippet)
+    local letter, index = snippet.captures[1], snippet.captures[2]
+    local trigger = letter .. index
+    if index_conflicts_set[trigger] then
+        return s(nil, t(trigger))
     end
+    return s(nil, t(letter .. '_' .. index))
 end
 
-for _, val in pairs(greek_letters) do
-    table.insert(letter_snippets, snip(';' .. val[1], val[2], {}, math))
-    table.insert(letter_snippets, snip(';' .. val[1], '$' .. val[2] .. '$ ', {}, markup))
-    generate_index_snippets(val[2])
-    table.insert(latin_letters, val[1])
-end
-
-for _, letter in pairs(latin_letters) do
-    generate_index_snippets(letter)
-    table.insert(letter_snippets, snip(':' .. letter, '$' .. letter .. '$ ', {}, markup))
-end
+table.insert(letter_snippets, snip(':(' .. trigger_latin .. ')', '$<>$ ', { cap(1) }, markup))
+table.insert(letter_snippets, snip(';(' .. trigger_greek .. ')', '$<>$ ', { d(1, get_greek) }, markup))
+table.insert(letter_snippets, snip(';(' .. trigger_greek .. ')', '<> ', { d(1, get_greek) }, math))
+table.insert(letter_snippets,
+    snip('\\$(' .. trigger_index_pre .. ')\\$' .. '(' .. trigger_index_post .. ') ',
+        '$<>$ ', { d(1, get_index) }, markup, 500))
+table.insert(letter_snippets,
+    snip('(' .. trigger_index_pre .. ')' .. '(' .. trigger_index_post .. ') ', '<> ', { d(1, get_index) }, math, 200))
 
 return {
     unpack(letter_snippets)
