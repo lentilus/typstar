@@ -30,6 +30,20 @@ function M.run_shell_command(cmd)
     vim.fn.jobstart(cmd)
 end
 
+function M.char_to_hex(c)
+    return string.format("%%%02X", string.byte(c))
+end
+
+function M.urlencode(url)
+    if url == nil then
+        return ''
+    end
+    url = string.gsub(url, '\n', '\r\n')
+    url = string.gsub(url, '([^%w _%%%-%.~])', M.char_to_hex)
+    url = string.gsub(url, ' ', '%%20')
+    return url
+end
+
 function M.get_treesitter_root(bufnr)
     return ts.get_parser(bufnr):parse()[1]:root()
 end
