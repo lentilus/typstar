@@ -7,12 +7,12 @@ local default_config = {
         filename = 'drawing-%Y-%m-%d-%H-%M-%S',
         fileExtension = '.excalidraw.md',
         fileExtensionInserted = '.excalidraw.svg',
-        uriOpenCommand = 'xdg-open',
+        uriOpenCommand = 'xdg-open', -- set depending on OS
         templatePath = nil,
     },
     snippets = {
         enable = true,
-        modules = {
+        modules = { -- enable modules from ./snippets
             'document',
             'letters',
             'math',
