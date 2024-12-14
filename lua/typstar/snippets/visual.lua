@@ -1,72 +1,90 @@
+local ts = vim.treesitter
 local ls = require('luasnip')
-local i = ls.insert_node
 local d = ls.dynamic_node
-local f = ls.function_node
+local i = ls.insert_node
+local s = ls.snippet_node
+local t = ls.text_node
 
+local utils = require('typstar.utils')
 local helper = require('typstar.autosnippets')
 local math = helper.in_math
 local snip = helper.snip
-local cap = helper.cap
-local get_visual = helper.get_visual
 
 local snippets = {}
-local operations = { -- boolean denotes whether an additional layer of () brackets should be removed
-    { 'vi',  '1/(',         ')', true },
-    { 'bb',  '(',           ')', false },
-    { 'sq',  '[',           ']', true },
-    { 'abs', 'abs(',        ')', false },
-    { 'ul',  'underline(',  ')', false },
-    { 'ol',  'overline(',   ')', false },
-    { 'ub',  'underbrace(', ')', false },
-    { 'ob',  'overbrace(',  ')', false },
-    { 'ht',  'hat(',        ')', false },
-    { 'br',  'macron(',     ')', false },
-    { 'dt',  'dot(',        ')', false },
-    { 'ci',  'circle(',     ')', false },
-    { 'td',  'tilde(',      ')', false },
-    { 'nr',  'norm(',       ')', false },
-    { 'vv',  'vec(',        ')', false },
-    { 'rt',  'sqrt(',       ')', false },
+local operations = {                            -- first boolean: existing brackets should be kept; second boolean: brackets should be added
+    { 'vi',  '1/',         '',  true,  false },
+    { 'bb',  '(',          ')', true,  false }, -- add round brackets
+    { 'sq',  '[',          ']', true,  false }, -- add square brackets
+    { 'bB',  '(',          ')', false, false }, -- replace with round brackets
+    { 'sQ',  '[',          ']', false, false }, -- replace with square brackets
+    { 'BB',  '',           '',  false, false }, -- remove brackets
+    { 'ss',  '"',          '"', false, false },
+    { 'abs', 'abs',        '',  true,  true },
+    { 'ul',  'underline',  '',  true,  true },
+    { 'ol',  'overline',   '',  true,  true },
+    { 'ub',  'underbrace', '',  true,  true },
+    { 'ob',  'overbrace',  '',  true,  true },
+    { 'ht',  'hat',        '',  true,  true },
+    { 'br',  'macron',     '',  true,  true },
+    { 'dt',  'dot',        '',  true,  true },
+    { 'ci',  'circle',     '',  true,  true },
+    { 'td',  'tilde',      '',  true,  true },
+    { 'nr',  'norm',       '',  true,  true },
+    { 'vv',  'vec',        '',  true,  true },
+    { 'rt',  'sqrt',       '',  true,  true },
 }
 
-local wrap_brackets = function(args, snippet, val)
-    local captured = snippet.captures[1]
-    local bracket_types = { [')'] = '(', [']'] = '[', ['}'] = '{' }
-    local closing_bracket = captured:sub(-1, -1)
-    local opening_bracket = bracket_types[closing_bracket]
+local ts_wrap_query = ts.query.parse('typst', '[(call) (ident) (letter) (number)] @wrap')
+local ts_wrapnobrackets_query = ts.query.parse('typst', '(group) @wrapnobrackets')
 
-    if opening_bracket == nil then
-        return captured
+local process_ts_query = function(bufnr, cursor, query, root, insert1, insert2, cut_offset)
+    for _, match, _ in query:iter_matches(root, bufnr, cursor[1], cursor[1] + 1) do
+        if match then
+            local start_row, start_col, end_row, end_col = utils.treesitter_match_start_end(match)
+            if end_row == cursor[1] and end_col == cursor[2] then
+                vim.schedule(function() -- to not interfere with luasnip
+                    local cursor_offset = 0
+                    local old_len1, new_len1 = utils.insert_text(
+                        bufnr, start_row, start_col, insert1, 0, cut_offset)
+                    if start_row == cursor[1] then
+                        cursor_offset = cursor_offset + (new_len1 - old_len1)
+                    end
+                    local old_len2, new_len2 = utils.insert_text(
+                        bufnr, end_row, cursor[2] + cursor_offset, insert2, cut_offset, 0)
+                    if end_row == cursor[1] then
+                        cursor_offset = cursor_offset + (new_len2 - old_len2)
+                    end
+                    vim.api.nvim_win_set_cursor(0, { cursor[1] + 1, cursor[2] + cursor_offset })
+                end)
+                return true
+            end
+        end
+    end
+    return false
+end
+
+local smart_wrap = function(args, parent, old_state, expand)
+    local bufnr = vim.api.nvim_get_current_buf()
+    local cursor = utils.get_cursor_pos()
+    local root = utils.get_treesitter_root(bufnr)
+
+    if process_ts_query(bufnr, cursor, ts_wrapnobrackets_query, root, expand[2], expand[3], expand[4] and 0 or 1) then
+        return s(nil, t())
     end
 
-    local n_brackets = 0
-    local char
-
-    for i = #captured, 1, -1 do
-        char = captured:sub(i, i)
-        if char == closing_bracket then
-            n_brackets = n_brackets + 1
-        elseif char == opening_bracket then
-            n_brackets = n_brackets - 1
-        end
-
-        if n_brackets == 0 then
-            local remove_additional = val[4] and opening_bracket == '('
-            return captured:sub(1, i - 1) .. val[2]
-                .. captured:sub(i + (remove_additional and 1 or 0), -(remove_additional and 2 or 1)) .. val[3]
-        end
+    local expand1 = expand[5] and expand[2] .. '(' or expand[2]
+    local expand2 = expand[5] and expand[3] .. ')' or expand[3]
+    if process_ts_query(bufnr, cursor, ts_wrap_query, root, expand1, expand2) then
+        return s(nil, t())
     end
-    return captured
+    if #parent.env.LS_SELECT_RAW > 0 then
+        return s(nil, t(expand1 .. table.concat(parent.env.LS_SELECT_RAW) .. expand2))
+    end
+    return s(nil, { t(expand1), i(1, '1+1'), t(expand2) })
 end
 
 for _, val in pairs(operations) do
-    table.insert(snippets, snip(val[1], val[2] .. '<>' .. val[3], { d(1, get_visual) }, math))
-    table.insert(snippets, snip('[\\s$]' .. val[1], val[2] .. '<>' .. val[3], { i(1, '1') }, math))
-    table.insert(snippets,
-        snip('([\\w]+)'
-            .. val[1], val[2] .. '<>' .. val[3], { cap(1) }, math, 900))
-    table.insert(snippets,
-        snip('(.*[\\)|\\]|\\}])' .. val[1], '<>', { f(wrap_brackets, {}, { user_args = { val } }), nil }, math, 1100))
+    table.insert(snippets, snip(val[1], '<>', { d(1, smart_wrap, {}, { user_args = { val } }) }, math, 1000, false))
 end
 
 return {

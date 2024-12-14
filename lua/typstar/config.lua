@@ -5,12 +5,14 @@ local default_config = {
     excalidraw = {
         assetsDir = 'assets',
         filename = 'drawing-%Y-%m-%d-%H-%M-%S',
+        fileExtension = '.excalidraw.md',
         fileExtensionInserted = '.excalidraw.svg',
-        obsidianOpenConfig = nil,
+        uriOpenCommand = 'xdg-open', -- set depending on OS
+        templatePath = nil,
     },
     snippets = {
         enable = true,
-        modules = {
+        modules = { -- enable modules from ./snippets
             'document',
             'letters',
             'math',
@@ -22,8 +24,10 @@ local default_config = {
 
 function M.merge_config(args)
     M.config = vim.tbl_deep_extend('force', default_config, args or {})
-    M.config.excalidraw.obsidianOpenConfig = M.config.excalidraw.obsidianOpenConfig or
-        M.config.typstarRoot .. '/res/obsidian_open_config_example.json'
+    M.config.excalidraw.templatePath = M.config.excalidraw.templatePath or
+        {
+            ['%.excalidraw%.md$'] = M.config.typstarRoot .. '/res/excalidraw_template.excalidraw.md',
+        }
 end
 
 M.merge_config(nil)

@@ -2,32 +2,42 @@ local M = {}
 local config = require('typstar.config')
 local utils = require('typstar.utils')
 
-
 local cfg = config.config.excalidraw
 local affix = [[
 #figure(
-    image("%s"),
+  image("%s"),
 )
 ]]
 
-local function launch_obsidian_open(path)
+local function launch_obsidian(path)
     print(string.format('Opening %s in Excalidraw', path))
-    utils.run_shell_command('python3 ' ..
-        config.config.typstarRoot .. '/python/obsidian_open.py ' ..
-        path .. ' --config ' .. cfg.obsidianOpenConfig)
+    utils.run_shell_command(string.format('%s "obsidian://open?path=%s"', cfg.uriOpenCommand, utils.urlencode(path)))
 end
-
 
 function M.insert_drawing()
     local assets_dir = vim.fn.expand('%:p:h') .. '/' .. cfg.assetsDir
+    local filename = os.date(cfg.filename)
+    local path = assets_dir .. '/' .. filename .. cfg.fileExtension
+    local path_inserted = cfg.assetsDir .. '/' .. filename .. cfg.fileExtensionInserted
+
     if vim.fn.isdirectory(assets_dir) == 0 then
         vim.fn.mkdir(assets_dir, 'p')
     end
-    local filename = os.date(cfg.filename)
-    local path = assets_dir .. '/' .. filename .. '.excalidraw.md'
-    local path_inserted = cfg.assetsDir .. '/' .. filename .. cfg.fileExtensionInserted
-    utils.insert_snippet(string.format(affix, path_inserted))
-    launch_obsidian_open(path)
+    local found_match = false
+    for pattern, template_path in pairs(cfg.templatePath) do
+        if string.match(path, pattern) then
+            found_match = true
+            utils.run_shell_command(string.format('cat %s > %s', template_path, path)) -- don't copy file metadata
+            break
+        end
+    end
+    if not found_match then
+        print('No matching template found for the path: ' .. path)
+        return
+    end
+
+    utils.insert_text_block(string.format(affix, path_inserted))
+    launch_obsidian(path)
 end
 
 function M.open_drawing()
@@ -35,7 +45,7 @@ function M.open_drawing()
     local path = vim.fn.expand('%:p:h') ..
         '/' .. string.match(line, '"(.*)' .. string.gsub(cfg.fileExtensionInserted, '%.', '%%%.')) ..
         '.excalidraw.md'
-    launch_obsidian_open(path)
+    launch_obsidian(path)
 end
 
 return M
