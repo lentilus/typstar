@@ -38,7 +38,6 @@ local greek_keys = {}
 local common_indices = { '\\d+', '[i-n]' }
 local index_conflicts = { 'in', 'pi', 'xi' }
 local index_conflicts_set = {}
-local trigger_latin = '[A-Za-z0-9]'
 local trigger_greek = ''
 local trigger_index_pre = ''
 local trigger_index_post = ''
@@ -63,7 +62,7 @@ end
 
 greek_letters_map = greek_full
 trigger_greek = table.concat(greek_keys, '|')
-trigger_index_pre = trigger_latin .. '|' .. table.concat(greek_letters, '|')
+trigger_index_pre = '[A-Za-z]' .. '|' .. table.concat(greek_letters, '|')
 trigger_index_post = table.concat(common_indices, '|')
 
 local get_greek = function(_, snippet)
@@ -79,9 +78,9 @@ local get_index = function(_, snippet)
     return s(nil, t(letter .. '_' .. index))
 end
 
-table.insert(letter_snippets, snip(':(' .. trigger_latin .. ')', '$<>$ ', { cap(1) }, markup))
+table.insert(letter_snippets, snip(':([A-Za-z0-9])', '$<>$ ', { cap(1) }, markup))
 table.insert(letter_snippets, snip(';(' .. trigger_greek .. ')', '$<>$ ', { d(1, get_greek) }, markup))
-table.insert(letter_snippets, snip(';(' .. trigger_greek .. ')', '<> ', { d(1, get_greek) }, math))
+table.insert(letter_snippets, snip(';(' .. trigger_greek .. ')', '<>', { d(1, get_greek) }, math))
 table.insert(letter_snippets,
     snip('\\$(' .. trigger_index_pre .. ')\\$' .. '(' .. trigger_index_post .. ') ',
         '$<>$ ', { d(1, get_index) }, markup, 500))
