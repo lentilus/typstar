@@ -31,8 +31,8 @@ return {
     snip('ge', '>>= ', {}, math),
 
     -- operators
-    snip('(.*)sk', '<>+', { cap(1) }, math),
-    snip('(.*)ak', '<>-', { cap(1) }, math),
+    snip('ak([^k])', '+<>', { cap(1) }, math, 500, false),
+    snip('sk([^k])', '-<>', { cap(1) }, math, 500, false),
     snip('oak', 'plus.circle ', {}, math, 1100),
     snip('bak', 'plus.square ', {}, math, 1100),
     snip('mak', 'plus.minus ', {}, math, 1100),
@@ -59,6 +59,7 @@ return {
     snip('mt', '|->> ', {}, math),
     snip('Oo', 'compose ', {}, math),
     snip('iso', 'tilde.equiv ', {}, math),
+    snip('ep', 'exp(<>) ', { i(1, '1') }, math),
     snip('rrn', 'RR^n ', {}, math),
     snip('cc', 'cases(\n\t<>\n)\\', { i(1, '1') }, math),
     snip('(.*)iv', '<>^(-1)', { cap(1) }, math),
