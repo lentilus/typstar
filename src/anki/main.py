@@ -1,34 +1,37 @@
 import asyncio
 import glob
 import os
+from typing_extensions import Annotated
+
+import typer
 
 from anki.anki_api import AnkiConnectApi
 from anki.file_handler import FileHandler
 from anki.parser import FlashcardParser
 from anki.typst_compiler import TypstCompiler
 
-parser = FlashcardParser()
-compiler = TypstCompiler(os.getcwd())
-api = AnkiConnectApi()
+cli = typer.Typer(name="typstar-anki")
 
 
-async def export_flashcards(path):
+async def export_flashcards(root_dir, typst_cmd):
+    parser = FlashcardParser()
+    compiler = TypstCompiler(root_dir, typst_cmd)
+    api = AnkiConnectApi()
+
     # parse flashcards
     print("Parsing flashcards...")
     flashcards = []
     file_handlers = []
-    for file in glob.glob(f"{path}/**/*.typ", recursive=True):
+    for file in glob.glob(f"{root_dir}/**/*.typ", recursive=True):
         fh = FileHandler(file)
         cards = parser.parse_file(fh)
         file_handlers.append((fh, cards))
         flashcards.extend(cards)
 
     # async typst compilation
-    print("Compiling flashcards...")
     await compiler.compile_flashcards(flashcards)
 
     # async anki push per deck
-    print("Pushing flashcards to anki...")
     await api.push_flashcards(flashcards)
 
     # write id updates to files
@@ -44,8 +47,15 @@ async def export_flashcards(path):
     print("Done")
 
 
+@cli.command()
+def cmd(root_dir: Annotated[
+    str, typer.Option(help="Directory scanned for flashcards and passed over to typst compile command")] = os.getcwd(),
+        typst_cmd: Annotated[str, typer.Option(help="Typst command used for flashcard compilation")] = "typst"):
+    asyncio.run(export_flashcards(root_dir, typst_cmd))
+
+
 def main():
-    asyncio.run(export_flashcards(os.getcwd()))
+    typer.run(cmd)
 
 
 if __name__ == "__main__":

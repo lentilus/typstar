@@ -26,6 +26,7 @@ class AnkiConnectApi:
                 add.append(card)
             else:
                 update.append(card)
+        print(f"Pushing {len(add)} new flashcards and {len(update)} updated flashcards to Anki...")
         await asyncio.gather(self._add(add), self._update(update))
 
     async def _request_api(self, action, **params):

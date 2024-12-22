@@ -5,7 +5,8 @@ from typing import List
 from .flashcard import Flashcard
 
 default_preamble = """
-#set page(width: auto, height: auto, margin: (rest: 0%))
+#set text(size: 20pt)
+#set page(width: auto, height: auto, margin: (rest: 8pt))
 #let flashcard(id, front, back) = {
   strong(front)
   [\\ ]
@@ -24,7 +25,7 @@ class TypstCompiler:
     typst_root_dir: str
     max_processes: int
 
-    def __init__(self, typst_root_dir: str = ".", typst_cmd: str = "typst", preamble: str = None):
+    def __init__(self, typst_root_dir: str, typst_cmd: str, preamble: str = None):
         if preamble is None:
             preamble = default_preamble
         self.typst_cmd = typst_cmd
@@ -39,12 +40,10 @@ class TypstCompiler:
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
-        proc.stdin.write(bytes(src, encoding="utf-8"))
-        proc.stdin.close()
-        await proc.wait()
-        if err := await proc.stderr.read():
-            raise TypstCompilationError(bytes.decode(err, encoding="utf-8"))
-        return await proc.stdout.read()
+        stdout, stderr = await proc.communicate(bytes(src, encoding="utf-8"))
+        if stderr:
+            raise TypstCompilationError(bytes.decode(stderr, encoding="utf-8"))
+        return stdout
 
     async def _compile_flashcard(self, card: Flashcard):
         front = await self._compile(self.preamble + "\n" + card.as_typst(True))
@@ -52,6 +51,7 @@ class TypstCompiler:
         card.set_svgs(front, back)
 
     async def compile_flashcards(self, cards: List[Flashcard]):
+        print(f"Compiling {len(cards)} flashcards...")
         semaphore = asyncio.Semaphore(self.max_processes)
 
         async def compile_coro(card):

@@ -34,7 +34,7 @@ class Flashcard:
 
     def as_html(self, front: bool) -> str:
         prefix = f"<p hidden>{self.front}: {self.back}{' ' * 10}</p>"  # indexable via anki search
-        image = f'<img src="{self.svg_filename(front)}" width=100 />'
+        image = f'<img src="{self.svg_filename(front)}" />'
         return prefix + image
 
     def as_anki_model(self, tmp: bool = False) -> dict:
