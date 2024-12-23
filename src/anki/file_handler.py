@@ -1,3 +1,4 @@
+import os.path
 from typing import List
 
 import tree_sitter
@@ -10,6 +11,10 @@ class FileHandler:
     def __init__(self, path):
         self.file_path = path
         self.read()
+
+    @property
+    def directory_path(self) -> str:
+        return os.path.dirname(self.file_path)
 
     def get_bytes(self) -> bytes:
         return bytes("".join(self.file_content), encoding="utf-8")

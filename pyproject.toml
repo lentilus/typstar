@@ -10,7 +10,7 @@ authors = [
     { name = "arne314", email = "73391160+arne314@users.noreply.github.com" }
 ]
 readme = "README.md"
-requires-python = ">=3.9.20"
+requires-python = ">=3.10.15"
 dependencies = [
     "aiohttp>=3.11.11",
     "tree-sitter-language-pack>=0.2.0",

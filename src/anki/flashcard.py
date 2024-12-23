@@ -1,5 +1,7 @@
 import tree_sitter
 
+from .file_handler import FileHandler
+
 
 class Flashcard:
     note_id: int
@@ -8,6 +10,8 @@ class Flashcard:
     deck: str
     id_updated: bool
 
+    file_handler: FileHandler
+
     note_id_node: tree_sitter.Node
     front_node: tree_sitter.Node
     back_node: tree_sitter.Node
@@ -15,8 +19,8 @@ class Flashcard:
     svg_front: bytes
     svg_back: bytes
 
-    def __init__(self, front: str, back: str, deck: str = None, note_id: int = None):
-        if not deck:
+    def __init__(self, front: str, back: str, deck: str | None, note_id: int, file_handler: FileHandler):
+        if deck is None:
             deck = "Default"
         if not note_id:
             note_id = 0
@@ -25,6 +29,7 @@ class Flashcard:
         self.deck = deck
         self.note_id = note_id
         self.id_updated = False
+        self.file_handler = file_handler
 
     def __str__(self):
         return f"Flashcard(id={self.note_id}, front={self.front})"

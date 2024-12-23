@@ -41,16 +41,23 @@ class FlashcardParser:
         cards = []
         tree = self.typst_parser.parse(file.get_bytes(), encoding="utf8")
         captures = self.flashcard_query.captures(tree.root_node)
+        if not captures:
+            return cards
 
-        n = len(captures["flashcard"]) if captures else 0
-        for idx in range(n):
-            note_id = captures["id"][idx]
-            front = captures["front"][idx]
-            back = captures["back"][idx]
+        def row_compare(node):
+            return node.start_point.row
+
+        captures["id"].sort(key=row_compare)
+        captures["front"].sort(key=row_compare)
+        captures["back"].sort(key=row_compare)
+
+        for note_id, front, back in zip(captures["id"], captures["front"], captures["back"]):
             card = Flashcard(
                 file.get_node_content(front, True),
                 file.get_node_content(back, True),
-                note_id=int(file.get_node_content(note_id))
+                None,
+                int(file.get_node_content(note_id)),
+                file,
             )
             card.set_ts_nodes(front, back, note_id)
             cards.append(card)

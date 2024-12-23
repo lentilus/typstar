@@ -1,5 +1,6 @@
 import asyncio
 import os
+import random
 from typing import List
 
 from .flashcard import Flashcard
@@ -33,21 +34,24 @@ class TypstCompiler:
         self.preamble = preamble
         self.max_processes = round(os.cpu_count() * 1.5)
 
-    async def _compile(self, src: str) -> bytes:
+    async def _compile(self, src: str, directory: str) -> bytes:
+        tmp_path = f"{directory}/tmp_{random.randint(1, 1000000000)}.typ"
+        with open(tmp_path, "w") as f:
+            f.write(src)
         proc = await asyncio.create_subprocess_shell(
-            f"{self.typst_cmd} compile - - --root {self.typst_root_dir} --format svg",
-            stdin=asyncio.subprocess.PIPE,
+            f"{self.typst_cmd} compile {tmp_path} - --root {self.typst_root_dir} --format svg",
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
-        stdout, stderr = await proc.communicate(bytes(src, encoding="utf-8"))
+        stdout, stderr = await proc.communicate()
+        os.remove(tmp_path)
         if stderr:
             raise TypstCompilationError(bytes.decode(stderr, encoding="utf-8"))
         return stdout
 
     async def _compile_flashcard(self, card: Flashcard):
-        front = await self._compile(self.preamble + "\n" + card.as_typst(True))
-        back = await self._compile(self.preamble + "\n" + card.as_typst(False))
+        front = await self._compile(self.preamble + "\n" + card.as_typst(True), card.file_handler.directory_path)
+        back = await self._compile(self.preamble + "\n" + card.as_typst(False), card.file_handler.directory_path)
         card.set_svgs(front, back)
 
     async def compile_flashcards(self, cards: List[Flashcard]):
@@ -58,4 +62,7 @@ class TypstCompiler:
             async with semaphore:
                 return await self._compile_flashcard(card)
 
-        return await asyncio.gather(*(compile_coro(card) for card in cards))
+        results = await asyncio.gather(*(compile_coro(card) for card in cards), return_exceptions=True)
+        for result in results:
+            if isinstance(result, Exception):
+                raise result
