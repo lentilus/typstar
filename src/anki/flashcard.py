@@ -10,6 +10,7 @@ class Flashcard:
     deck: str
     id_updated: bool
 
+    preamble: str
     file_handler: FileHandler
 
     note_id_node: tree_sitter.Node
@@ -19,7 +20,7 @@ class Flashcard:
     svg_front: bytes
     svg_back: bytes
 
-    def __init__(self, front: str, back: str, deck: str | None, note_id: int, file_handler: FileHandler):
+    def __init__(self, front: str, back: str, deck: str | None, note_id: int, preamble: str, file_handler: FileHandler):
         if deck is None:
             deck = "Default"
         if not note_id:
@@ -28,8 +29,9 @@ class Flashcard:
         self.back = back
         self.deck = deck
         self.note_id = note_id
-        self.id_updated = False
+        self.preamble = preamble
         self.file_handler = file_handler
+        self.id_updated = False
 
     def __str__(self):
         return f"Flashcard(id={self.note_id}, front={self.front})"

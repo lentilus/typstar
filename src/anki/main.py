@@ -19,31 +19,17 @@ async def export_flashcards(root_dir, typst_cmd):
     api = AnkiConnectApi()
 
     # parse flashcards
-    print("Parsing flashcards...")
-    flashcards = []
-    file_handlers = []
-    for file in glob.glob(f"{root_dir}/**/*.typ", recursive=True):
-        fh = FileHandler(file)
-        cards = parser.parse_file(fh)
-        file_handlers.append((fh, cards))
-        flashcards.extend(cards)
+    flashcards = parser.parse_directory(root_dir)
 
     # async typst compilation
     await compiler.compile_flashcards(flashcards)
 
-    # async anki push per deck
-    await api.push_flashcards(flashcards)
-
-    # write id updates to files
-    print("Updating ids in source...")
-    for fh, cards in file_handlers:
-        file_updated = False
-        for c in cards:
-            if c.id_updated:
-                fh.update_node_content(c.note_id_node, c.note_id)
-                file_updated = True
-        if file_updated:
-            fh.write()
+    try:
+        # async anki push per deck
+        await api.push_flashcards(flashcards)
+    finally:
+        # write id updates to files
+        parser.update_ids_in_source()
     print("Done")
 
 
