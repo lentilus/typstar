@@ -13,9 +13,12 @@ class AnkiConnectError(Exception):
 
 class AnkiConnectApi:
     url: str
+    api_key: str
 
-    def __init__(self, url="http://127.0.0.1:8765"):
+    def __init__(self, url: str, api_key: str):
         self.url = url
+        self.api_key = api_key
+        self.semaphore = asyncio.Semaphore(2)  # increase in case Anki implements multithreading
 
     async def push_flashcards(self, cards: List[Flashcard]):
         add = []
@@ -33,15 +36,17 @@ class AnkiConnectApi:
         async with aiohttp.ClientSession() as session:
             data = {
                 "action": action,
-                "version": 6,
+                "key": self.api_key,
                 "params": params,
+                "version": 6,
             }
             try:
-                async with session.post(url=self.url, json=data) as response:
-                    result = await response.json(encoding="utf-8")
-                    if err := result["error"]:
-                        raise AnkiConnectError(err)
-                    return result["result"]
+                async with self.semaphore:
+                    async with session.post(url=self.url, json=data) as response:
+                        result = await response.json(encoding="utf-8")
+                        if err := result["error"]:
+                            raise AnkiConnectError(err)
+                        return result["result"]
             except aiohttp.ClientError as e:
                 raise AnkiConnectError(f"Could not connect to Anki: {e}")
 
@@ -73,5 +78,8 @@ class AnkiConnectApi:
         await self._update(cards)
 
     async def _update(self, cards: List[Flashcard]):
-        await asyncio.gather(*(self._update_note_model(card) for card in cards),
-                             *(self._store_media(card) for card in cards))
+        results = await asyncio.gather(*(self._update_note_model(card) for card in cards),
+                                       *(self._store_media(card) for card in cards), return_exceptions=True)
+        for result in results:
+            if isinstance(result, Exception):
+                raise result

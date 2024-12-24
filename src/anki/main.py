@@ -13,10 +13,10 @@ from anki.typst_compiler import TypstCompiler
 cli = typer.Typer(name="typstar-anki")
 
 
-async def export_flashcards(root_dir, typst_cmd):
+async def export_flashcards(root_dir, typst_cmd, anki_url, anki_key):
     parser = FlashcardParser()
     compiler = TypstCompiler(root_dir, typst_cmd)
-    api = AnkiConnectApi()
+    api = AnkiConnectApi(anki_url, anki_key)
 
     # parse flashcards
     flashcards = parser.parse_directory(root_dir)
@@ -36,8 +36,11 @@ async def export_flashcards(root_dir, typst_cmd):
 @cli.command()
 def cmd(root_dir: Annotated[
     str, typer.Option(help="Directory scanned for flashcards and passed over to typst compile command")] = os.getcwd(),
-        typst_cmd: Annotated[str, typer.Option(help="Typst command used for flashcard compilation")] = "typst"):
-    asyncio.run(export_flashcards(root_dir, typst_cmd))
+        typst_cmd: Annotated[str, typer.Option(help="Typst command used for flashcard compilation")] = "typst",
+        anki_url: Annotated[str, typer.Option(help="Url for Anki-Connect")] = "http://127.0.0.1:8765",
+        anki_key: Annotated[str, typer.Option(help="Api key for Anki-Connect")] = None,
+        ):
+    asyncio.run(export_flashcards(root_dir, typst_cmd, anki_url, anki_key))
 
 
 def main():
