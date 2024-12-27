@@ -1,6 +1,8 @@
 import asyncio
 import os
 import random
+
+from pathlib import Path
 from typing import List
 
 from .flashcard import Flashcard
@@ -31,7 +33,7 @@ class TypstCompiler:
         self.typst_root_dir = typst_root_dir
         self.max_processes = round(os.cpu_count() * 1.5)
 
-    async def _compile(self, src: str, directory: str) -> bytes:
+    async def _compile(self, src: str, directory: Path) -> bytes:
         tmp_path = f"{directory}/tmp_{random.randint(1, 1000000000)}.typ"
         with open(tmp_path, "w", encoding="utf-8") as f:
             f.write(src)

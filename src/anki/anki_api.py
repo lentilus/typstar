@@ -14,6 +14,7 @@ class AnkiConnectError(Exception):
 class AnkiConnectApi:
     url: str
     api_key: str
+    semaphore: asyncio.Semaphore
 
     def __init__(self, url: str, api_key: str):
         self.url = url
@@ -30,7 +31,8 @@ class AnkiConnectApi:
             else:
                 update.append(card)
         print(f"Pushing {len(add)} new flashcards and {len(update)} updated flashcards to Anki...")
-        await asyncio.gather(self._add(add), self._update(update))
+        await self._add(add)
+        await self._update(update)
 
     async def _request_api(self, action, **params):
         async with aiohttp.ClientSession() as session:
