@@ -32,6 +32,8 @@ local operations = {                            -- first boolean: existing brack
     { 'nr',  'norm',       '',  true,  true },
     { 'vv',  'vec',        '',  true,  true },
     { 'rt',  'sqrt',       '',  true,  true },
+    { 'flo', 'floor',      '',  true,  true },
+    { 'cei', 'ceil',       '',  true,  true },
 }
 
 local ts_wrap_query = ts.query.parse('typst', '[(call) (ident) (letter) (number)] @wrap')
