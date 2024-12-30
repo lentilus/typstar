@@ -25,7 +25,7 @@ async def export_flashcards(root_dir, clear_cache, typst_cmd, anki_url, anki_key
     await compiler.compile_flashcards(flashcards)
 
     try:
-        # async anki push per deck
+        # async anki push
         await api.push_flashcards(flashcards)
     finally:
         # write id updates to files

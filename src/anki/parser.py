@@ -1,9 +1,10 @@
 import glob
 import json
+import re
 
 from functools import cache
 from pathlib import Path
-from typing import List
+from typing import List, Tuple
 
 import appdirs
 import tree_sitter
@@ -32,11 +33,17 @@ ts_flashcard_query = """
 ) @flashcard)
 """
 
+ts_deck_query = """
+((comment) @deck)
+"""
+deck_regex = re.compile(r"\W+ANKI:\s*(\S*)")
+
 
 class FlashcardParser:
     typst_language: tree_sitter.Language
     typst_parser: tree_sitter.Parser
     flashcard_query: tree_sitter.Query
+    deck_query: tree_sitter.Query
 
     file_handlers: List[tuple[FileHandler, List[Flashcard]]]
     file_hashes: dict[str, str]
@@ -46,28 +53,43 @@ class FlashcardParser:
         self.typst_language = get_language("typst")
         self.typst_parser = get_parser("typst")
         self.flashcard_query = self.typst_language.query(ts_flashcard_query)
+        self.deck_query = self.typst_language.query(ts_deck_query)
         self.file_handlers = []
         self._load_file_hashes()
 
     def _parse_file(self, file: FileHandler, preamble: str) -> List[Flashcard]:
         cards = []
         tree = self.typst_parser.parse(file.get_bytes(), encoding="utf8")
-        captures = self.flashcard_query.captures(tree.root_node)
-        if not captures:
+        card_captures = self.flashcard_query.captures(tree.root_node)
+        if not card_captures:
             return cards
+        deck_captures = self.deck_query.captures(tree.root_node)
 
         def row_compare(node):
             return node.start_point.row
 
-        captures["id"].sort(key=row_compare)
-        captures["front"].sort(key=row_compare)
-        captures["back"].sort(key=row_compare)
+        card_captures["id"].sort(key=row_compare)
+        card_captures["front"].sort(key=row_compare)
+        card_captures["back"].sort(key=row_compare)
 
-        for note_id, front, back in zip(captures["id"], captures["front"], captures["back"]):
+        deck_refs: List[Tuple[int, str]] = []
+        deck_refs_idx = -1
+        current_deck = None
+        if deck_captures:
+            deck_captures["deck"].sort(key=row_compare)
+            for comment in deck_captures["deck"]:
+                if match := deck_regex.match(file.get_node_content(comment)):
+                    deck_refs.append((comment.start_point.row, None if match[1].isspace() else match[1]))
+
+        for note_id, front, back in zip(card_captures["id"], card_captures["front"], card_captures["back"]):
+            while deck_refs_idx < len(deck_refs) - 1 and back.end_point.row >= deck_refs[deck_refs_idx + 1][0]:
+                deck_refs_idx += 1
+                current_deck = deck_refs[deck_refs_idx][1]
+
             card = Flashcard(
                 file.get_node_content(front, True),
                 file.get_node_content(back, True),
-                None,
+                current_deck,
                 int(file.get_node_content(note_id)),
                 preamble,
                 file,

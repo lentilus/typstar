@@ -1,10 +1,17 @@
 import asyncio
 import base64
-from typing import List
+from collections import defaultdict
+from typing import Iterable, List
 
 import aiohttp
 
 from .flashcard import Flashcard
+
+
+async def _gather_exceptions(coroutines):
+    for result in await asyncio.gather(*coroutines, return_exceptions=True):
+        if isinstance(result, Exception):
+            raise result
 
 
 class AnkiConnectError(Exception):
@@ -21,18 +28,26 @@ class AnkiConnectApi:
         self.api_key = api_key
         self.semaphore = asyncio.Semaphore(2)  # increase in case Anki implements multithreading
 
-    async def push_flashcards(self, cards: List[Flashcard]):
-        add = []
-        update = []
+    async def push_flashcards(self, cards: Iterable[Flashcard]):
+        add: dict[str, List[Flashcard]] = defaultdict(list)
+        update: dict[str, List[Flashcard]] = defaultdict(list)
+        n_add: int = 0
+        n_update: int = 0
 
         for card in cards:
             if card.is_new():
-                add.append(card)
+                add[card.deck].append(card)
+                n_add += 1
             else:
-                update.append(card)
-        print(f"Pushing {len(add)} new flashcards and {len(update)} updated flashcards to Anki...")
-        await self._add(add)
-        await self._update(update)
+                update[card.deck].append(card)
+                n_update += 1
+
+        print(f"Pushing {n_add} new flashcards and {n_update} updated flashcards to Anki...")
+        await self._create_required_decks({*add.keys(), *update.keys()})
+        await self._add_new_cards(add)
+        await _gather_exceptions(
+            [*self._update_cards_requests(add), *self._update_cards_requests(update, True)]
+        )
 
     async def _request_api(self, action, **params):
         async with aiohttp.ClientSession() as session:
@@ -63,25 +78,44 @@ class AnkiConnectApi:
                                 filename=card.svg_filename(False),
                                 data=base64.b64encode(card.svg_back).decode())
 
-    async def _add(self, cards: List[Flashcard]):
-        notes = []
-        for card in cards:
-            data = {
-                "deckName": card.deck,
-                "options": {
-                    "allowDuplicate": True,  # won't work with svgs
-                },
-            }
-            data.update(card.as_anki_model(True))
-            notes.append(data)
-        result = await self._request_api("addNotes", notes=notes)
-        for idx, note_id in enumerate(result):
-            cards[idx].update_id(note_id)
-        await self._update(cards)
+    async def _change_deck(self, deck: str, cards: List[int]):
+        await self._request_api("changeDeck", deck=deck, cards=cards)
 
-    async def _update(self, cards: List[Flashcard]):
-        results = await asyncio.gather(*(self._update_note_model(card) for card in cards),
-                                       *(self._store_media(card) for card in cards), return_exceptions=True)
-        for result in results:
-            if isinstance(result, Exception):
-                raise result
+    async def _add_new_cards(self, cards_map: dict[str, List[Flashcard]]):
+        notes: List[Flashcard] = []
+        notes_data: List[dict] = []
+        for cards in cards_map.values():
+            for card in cards:
+                data = {
+                    "deckName": card.deck,
+                    "options": {
+                        "allowDuplicate": True,  # won't work with svgs
+                    },
+                }
+                data.update(card.as_anki_model(True))
+                notes.append(card)
+                notes_data.append(data)
+        result = await self._request_api("addNotes", notes=notes_data)
+        for idx, note_id in enumerate(result):
+            notes[idx].update_id(note_id)
+
+    async def _create_required_decks(self, required: Iterable[str]):
+        existing = await self._request_api("deckNamesAndIds")
+        requests = []
+        for deck in required:
+            if deck not in existing:
+                requests.append(self._request_api("createDeck", deck=deck))
+        await _gather_exceptions(requests)
+
+    def _update_cards_requests(self, cards_map: dict[str, List[Flashcard]], update_deck: bool = True):
+        requests = []
+        for deck, cards in cards_map.items():
+            card_ids = []
+            for card in cards:
+                requests.append(self._update_note_model(card))
+                requests.append(self._store_media(card))
+                if update_deck:
+                    card_ids.append(card.note_id)
+            if card_ids:
+                requests.append(self._change_deck(deck, card_ids))
+        return requests
