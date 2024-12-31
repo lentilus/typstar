@@ -98,26 +98,38 @@ class FlashcardParser:
             cards.append(card)
         return cards
 
-    def parse_directory(self, root_dir):
-        print(f"Parsing flashcards in {root_dir}...")
-        root_dir = Path(root_dir)
+    def parse_directory(self, scan_dir, force_scan: Path = None):
+        single_file = None
+        is_force_scan = force_scan is not None
+        if is_force_scan:
+            if force_scan.is_file():
+                single_file = force_scan
+                scan_dir = force_scan.parent
+            else:
+                scan_dir = force_scan
+
+        print(f"Parsing flashcards in {scan_dir if single_file is None else single_file} ...")
         preambles = {}
         flashcards = []
 
         @cache
         def get_preamble(path: Path) -> str | None:
-            while path != root_dir:
+            while path != scan_dir.parent:
                 if preamble := preambles.get(path):
                     return preamble
                 path = path.parent
 
-        for file in sorted(glob.glob(f"{root_dir}/**/**.typ", include_hidden=True, recursive=True)):
+        for file in sorted(glob.glob(f"{scan_dir}/**/**.typ", include_hidden=True, recursive=True)):
             file = Path(file)
             if file.name == ".anki.typ":
                 preambles[file.parent] = file.read_text(encoding="utf-8")
                 continue
+            if single_file is not None and file != single_file:
+                continue
+
             fh = FileHandler(file)
-            if self._hash_changed(fh):
+            file_changed = self._hash_changed(fh)
+            if is_force_scan or file_changed:
                 cards = self._parse_file(fh, get_preamble(file.parent))
                 self.file_handlers.append((fh, cards))
                 flashcards.extend(cards)

@@ -25,10 +25,10 @@ class TypstCompilationError(ValueError):
 class TypstCompiler:
     preamble: str
     typst_cmd: str
-    typst_root_dir: str
+    typst_root_dir: Path
     max_processes: int
 
-    def __init__(self, typst_root_dir: str, typst_cmd: str):
+    def __init__(self, typst_root_dir: Path, typst_cmd: str):
         self.typst_cmd = typst_cmd
         self.typst_root_dir = typst_root_dir
         self.max_processes = round(os.cpu_count() * 1.5)
