@@ -1,0 +1,23 @@
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[project]
+name = "typstar"
+version = "1.0.0"
+description = "Neovim plugin for efficient note taking in typst"
+authors = [
+    { name = "arne314", email = "73391160+arne314@users.noreply.github.com" }
+]
+readme = "README.md"
+requires-python = ">=3.11.10"
+dependencies = [
+    "aiohttp>=3.11.11",
+    "appdirs>=1.4.4",
+    "tree-sitter-language-pack>=0.2.0",
+    "typer>=0.15.1",
+]
+
+[project.scripts]
+typstar-anki = "anki.main:main"
+
