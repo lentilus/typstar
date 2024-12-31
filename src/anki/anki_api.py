@@ -42,7 +42,7 @@ class AnkiConnectApi:
                 update[card.deck].append(card)
                 n_update += 1
 
-        print(f"Pushing {n_add} new flashcards and {n_update} updated flashcards to Anki...")
+        print(f"Pushing {n_add} new flashcards and {n_update} updated flashcards to Anki...", flush=True)
         await self._create_required_decks({*add.keys(), *update.keys()})
         await self._add_new_cards(add)
         await _gather_exceptions(

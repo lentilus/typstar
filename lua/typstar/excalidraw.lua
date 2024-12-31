@@ -11,7 +11,9 @@ local affix = [[
 
 local function launch_obsidian(path)
     print(string.format('Opening %s in Excalidraw', path))
-    utils.run_shell_command(string.format('%s "obsidian://open?path=%s"', cfg.uriOpenCommand, utils.urlencode(path)))
+    utils.run_shell_command(
+        string.format('%s "obsidian://open?path=%s"', cfg.uriOpenCommand, utils.urlencode(path)), false
+    )
 end
 
 function M.insert_drawing()
@@ -27,7 +29,7 @@ function M.insert_drawing()
     for pattern, template_path in pairs(cfg.templatePath) do
         if string.match(path, pattern) then
             found_match = true
-            utils.run_shell_command(string.format('cat %s > %s', template_path, path)) -- don't copy file metadata
+            utils.run_shell_command(string.format('cat %s > %s', template_path, path), false) -- don't copy file metadata
             break
         end
     end

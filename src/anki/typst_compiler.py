@@ -55,7 +55,7 @@ class TypstCompiler:
         card.set_svgs(front, back)
 
     async def compile_flashcards(self, cards: List[Flashcard]):
-        print(f"Compiling {len(cards)} flashcards...")
+        print(f"Compiling {len(cards)} flashcards...", flush=True)
         semaphore = asyncio.Semaphore(self.max_processes)
 
         async def compile_coro(card):

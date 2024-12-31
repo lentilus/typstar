@@ -108,7 +108,7 @@ class FlashcardParser:
             else:
                 scan_dir = force_scan
 
-        print(f"Parsing flashcards in {scan_dir if single_file is None else single_file} ...")
+        print(f"Parsing flashcards in {scan_dir if single_file is None else single_file} ...", flush=True)
         preambles = {}
         flashcards = []
 
@@ -158,7 +158,7 @@ class FlashcardParser:
         self.save_file_hashes()
 
     def update_ids_in_source(self):
-        print("Updating ids in source...")
+        print("Updating ids in source...", flush=True)
         for fh, cards in self.file_handlers:
             file_updated = False
             for c in cards:

@@ -26,8 +26,31 @@ function M.insert_text_block(snip)
     vim.api.nvim_buf_set_lines(vim.api.nvim_get_current_buf(), line_num, line_num, false, lines)
 end
 
-function M.run_shell_command(cmd)
-    vim.fn.jobstart(cmd)
+function M.run_shell_command(cmd, show_output)
+    local handle_output = function(data, err)
+        local msg = table.concat(data, '\n')
+        if not string.match(msg, '^%s*$') then
+            local level = err and vim.log.levels.ERROR or vim.log.levels.INFO
+            vim.notify(msg, level)
+        end
+    end
+    if show_output then
+        vim.fn.jobstart(
+            cmd,
+            {
+                on_stdout = function(_, data, _)
+                    handle_output(data, false)
+                end,
+                on_stderr = function(_, data, _)
+                    handle_output(data, true)
+                end,
+                stdout_buffered = false,
+                stderr_buffered = true,
+            }
+        )
+    else
+        vim.fn.jobstart(cmd)
+    end
 end
 
 function M.char_to_hex(c)

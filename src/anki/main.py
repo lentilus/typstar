@@ -32,7 +32,7 @@ async def export_flashcards(root_dir, force_scan, clear_cache, typst_cmd, anki_u
         # write id updates to files
         parser.update_ids_in_source()
     parser.save_file_hashes()
-    print("Done")
+    print("Done", flush=True)
 
 
 @cli.command()
