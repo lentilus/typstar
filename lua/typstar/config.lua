@@ -2,6 +2,12 @@ local M = {}
 
 local default_config = {
     typstarRoot = '~/typstar',
+    anki = {
+        typstarAnkiCmd = 'typstar-anki',
+        typstCmd = 'typst',
+        ankiUrl = 'http://127.0.0.1:8765',
+        ankiKey = nil,
+    },
     excalidraw = {
         assetsDir = 'assets',
         filename = 'drawing-%Y-%m-%d-%H-%M-%S',

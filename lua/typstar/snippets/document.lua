@@ -30,5 +30,7 @@ end
 return {
     start('dm', '$\n\t<>\n$', { i(1) }, markup),
     snip('ll', ' $<>$', { i(1, '1+1') }, markup),
+    start('fla', '#flashcard(0)[<>][\n\t<>\n]', { i(1, "flashcard"), i(2) }, markup),
+    start('flA', '#flashcard(0, "<>")[\n\t<>\n]', { i(1, "flashcard"), i(2) }, markup),
     unpack(document_snippets),
 }
