@@ -4,10 +4,10 @@ build-backend = "pdm.backend"
 
 [project]
 name = "typstar"
-version = "1.0.0"
-description = "Neovim plugin for efficient note taking in typst"
+version = "1.1.0"
+description = "Neovim plugin for efficient note taking in Typst"
 authors = [
-    { name = "arne314", email = "73391160+arne314@users.noreply.github.com" }
+    { name = "arne314" }
 ]
 readme = "README.md"
 requires-python = ">=3.11.10"
