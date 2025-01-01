@@ -98,7 +98,7 @@ class FlashcardParser:
             cards.append(card)
         return cards
 
-    def parse_directory(self, scan_dir, force_scan: Path = None):
+    def parse_directory(self, root_dir: Path, force_scan: Path = None):
         single_file = None
         is_force_scan = force_scan is not None
         if is_force_scan:
@@ -107,6 +107,8 @@ class FlashcardParser:
                 scan_dir = force_scan.parent
             else:
                 scan_dir = force_scan
+        else:
+            scan_dir = root_dir
 
         print(f"Parsing flashcards in {scan_dir if single_file is None else single_file} ...", flush=True)
         preambles = {}
@@ -114,16 +116,18 @@ class FlashcardParser:
 
         @cache
         def get_preamble(path: Path) -> str | None:
-            while path != scan_dir.parent:
+            while path != root_dir.parent:
                 if preamble := preambles.get(path):
                     return preamble
                 path = path.parent
 
-        for file in sorted(glob.glob(f"{scan_dir}/**/**.typ", include_hidden=True, recursive=True)):
+        for file in sorted(glob.glob(f"{root_dir}/**/.anki.typ", include_hidden=True, recursive=True)):
             file = Path(file)
             if file.name == ".anki.typ":
                 preambles[file.parent] = file.read_text(encoding="utf-8")
-                continue
+
+        for file in sorted(glob.glob(f"{scan_dir}/**/**.typ", recursive=True)):
+            file = Path(file)
             if single_file is not None and file != single_file:
                 continue
 
