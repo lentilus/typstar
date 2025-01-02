@@ -82,9 +82,10 @@ require('typstar').setup({
 3. Have the `xdg-open` command working or set a different command at `uriOpenCommand` in the [config](#configuration)
 
 ### Anki
+0. Typst version `0.12.0` or higher is required
 1. Install [Anki](https://apps.ankiweb.net/#download)
 2. Install [Anki-Connect](https://ankiweb.net/shared/info/2055492159) and make sure `http://localhost` is added to `webCorsOriginList` in the Add-on config (should be added by default)
-3. Install the typstar python package (I recommend using [pipx](https://github.com/pypa/pipx) via `pipx install git+https://github.com/arne314/typstar`) [Note: this may take a while]
+3. Install the typstar python package (I recommend using [pipx](https://github.com/pypa/pipx) via `pipx install git+https://github.com/arne314/typstar`, you will need to have python build tools and clang installed) \[Note: this may take a while\]
 4. Make sure the `typstar-anki` command is available in your `PATH` or modify the `typstarAnkiCmd` option in the [config](#configuration)
 
 ## Configuration
