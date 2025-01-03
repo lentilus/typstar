@@ -42,11 +42,17 @@ class AnkiConnectApi:
                 update[card.deck].append(card)
                 n_update += 1
 
-        print(f"Pushing {n_add} new flashcards and {n_update} updated flashcards to Anki...", flush=True)
+        print(
+            f"Pushing {n_add} new flashcards and {n_update} updated flashcards to Anki...",
+            flush=True,
+        )
         await self._create_required_decks({*add.keys(), *update.keys()})
         await self._add_new_cards(add)
         await _gather_exceptions(
-            [*self._update_cards_requests(add), *self._update_cards_requests(update, True)]
+            [
+                *self._update_cards_requests(add),
+                *self._update_cards_requests(update, True),
+            ]
         )
 
     async def _request_api(self, action, **params):
@@ -71,12 +77,16 @@ class AnkiConnectApi:
         await self._request_api("updateNoteModel", note=card.as_anki_model())
 
     async def _store_media(self, card):
-        await self._request_api("storeMediaFile",
-                                filename=card.svg_filename(True),
-                                data=base64.b64encode(card.svg_front).decode())
-        await self._request_api("storeMediaFile",
-                                filename=card.svg_filename(False),
-                                data=base64.b64encode(card.svg_back).decode())
+        await self._request_api(
+            "storeMediaFile",
+            filename=card.svg_filename(True),
+            data=base64.b64encode(card.svg_front).decode(),
+        )
+        await self._request_api(
+            "storeMediaFile",
+            filename=card.svg_filename(False),
+            data=base64.b64encode(card.svg_back).decode(),
+        )
 
     async def _change_deck(self, deck: str, cards: List[int]):
         await self._request_api("changeDeck", deck=deck, cards=cards)
@@ -107,7 +117,9 @@ class AnkiConnectApi:
                 requests.append(self._request_api("createDeck", deck=deck))
         await _gather_exceptions(requests)
 
-    def _update_cards_requests(self, cards_map: dict[str, List[Flashcard]], update_deck: bool = True):
+    def _update_cards_requests(
+        self, cards_map: dict[str, List[Flashcard]], update_deck: bool = True
+    ):
         requests = []
         for deck, cards in cards_map.items():
             card_ids = []

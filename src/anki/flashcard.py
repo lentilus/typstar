@@ -10,7 +10,7 @@ class Flashcard:
     deck: str
     id_updated: bool
 
-    preamble: str
+    preamble: str | None
     file_handler: FileHandler
 
     note_id_node: tree_sitter.Node
@@ -20,7 +20,15 @@ class Flashcard:
     svg_front: bytes
     svg_back: bytes
 
-    def __init__(self, front: str, back: str, deck: str | None, note_id: int, preamble: str, file_handler: FileHandler):
+    def __init__(
+        self,
+        front: str,
+        back: str,
+        deck: str | None,
+        note_id: int,
+        preamble: str | None,
+        file_handler: FileHandler,
+    ):
         if deck is None:
             deck = "Default"
         if not note_id:
@@ -51,7 +59,7 @@ class Flashcard:
                 "Front": f"tmp typst: {self.front}" if tmp else self.as_html(True),
                 "Back": f"tmp typst: {self.back}" if tmp else self.as_html(False),
             },
-            "tags": ["typst"]
+            "tags": ["typst"],
         }
         if not self.is_new():
             model["id"] = self.note_id
@@ -63,7 +71,9 @@ class Flashcard:
     def is_new(self) -> bool:
         return self.note_id == 0 or self.note_id is None
 
-    def set_ts_nodes(self, front: tree_sitter.Node, back: tree_sitter.Node, note_id: tree_sitter.Node):
+    def set_ts_nodes(
+        self, front: tree_sitter.Node, back: tree_sitter.Node, note_id: tree_sitter.Node
+    ):
         self.front_node = front
         self.back_node = back
         self.note_id_node = note_id

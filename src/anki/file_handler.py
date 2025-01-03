@@ -25,20 +25,25 @@ class FileHandler:
         return hashlib.md5("".join(self.file_content).encode(), usedforsecurity=False).hexdigest()
 
     def get_node_content(self, node: tree_sitter.Node, remove_outer=False):
-        content = "".join(
-            self.file_content[node.start_point.row:node.end_point.row + 1]
-        )[node.start_point.column:-(len(self.file_content[node.end_point.row]) - node.end_point.column)]
+        content = "".join(self.file_content[node.start_point.row : node.end_point.row + 1])[
+            node.start_point.column : -(
+                len(self.file_content[node.end_point.row]) - node.end_point.column
+            )
+        ]
         return content[1:-1] if remove_outer else content
 
     def update_node_content(self, node: tree_sitter.Node, value):
-        new_lines = self.file_content[:node.start_point.row]
-        first_line = self.file_content[node.start_point.row][:node.start_point.column]
-        last_line = self.file_content[node.end_point.row][node.end_point.column:]
-        new_lines.extend((
-            line + "\n" for line in (first_line + str(value) + last_line).split("\n")
-            if line != ""
-        ))
-        new_lines.extend(self.file_content[node.end_point.row + 1:])
+        new_lines = self.file_content[: node.start_point.row]
+        first_line = self.file_content[node.start_point.row][: node.start_point.column]
+        last_line = self.file_content[node.end_point.row][node.end_point.column :]
+        new_lines.extend(
+            (
+                line + "\n"
+                for line in (first_line + str(value) + last_line).split("\n")
+                if line != ""
+            )
+        )
+        new_lines.extend(self.file_content[node.end_point.row + 1 :])
         self.file_content = new_lines
 
     def read(self):

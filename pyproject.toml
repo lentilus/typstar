@@ -21,3 +21,12 @@ dependencies = [
 [project.scripts]
 typstar-anki = "anki.main:main"
 
+[tool.ruff]
+lint.extend-select = ["I"]
+line-length = 100
+
+[dependency-groups]
+dev = [
+    "ruff>=0.8.5",
+]
+

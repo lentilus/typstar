@@ -36,16 +36,33 @@ async def export_flashcards(root_dir, force_scan, clear_cache, typst_cmd, anki_u
 
 
 @cli.command()
-def cmd(root_dir: Annotated[
-    Path, typer.Option(help="Directory scanned for flashcards and passed over to typst compile command")] = os.getcwd(),
-        force_scan: Annotated[Path, typer.Option(help="File/directory to scan for flashcards while ignoring stored "
-                                                      "file hashes (e.g. on preamble change)")] = None,
-        clear_cache: Annotated[bool, typer.Option(help="Clear all stored file hashes (more aggressive than force-scan "
-                                                       "as it clears hashes regardless of their path)")] = False,
-        typst_cmd: Annotated[str, typer.Option(help="Typst command used for flashcard compilation")] = "typst",
-        anki_url: Annotated[str, typer.Option(help="Url for Anki-Connect")] = "http://127.0.0.1:8765",
-        anki_key: Annotated[str, typer.Option(help="Api key for Anki-Connect")] = None,
-        ):
+def cmd(
+    root_dir: Annotated[
+        Path,
+        typer.Option(
+            help="Directory scanned for flashcards and passed over to typst compile command"
+        ),
+    ] = Path(os.getcwd()),
+    force_scan: Annotated[
+        Path | None,
+        typer.Option(
+            help="File/directory to scan for flashcards while ignoring stored "
+            "file hashes (e.g. on preamble change)"
+        ),
+    ] = None,
+    clear_cache: Annotated[
+        bool,
+        typer.Option(
+            help="Clear all stored file hashes (more aggressive than force-scan "
+            "as it clears hashes regardless of their path)"
+        ),
+    ] = False,
+    typst_cmd: Annotated[
+        str, typer.Option(help="Typst command used for flashcard compilation")
+    ] = "typst",
+    anki_url: Annotated[str, typer.Option(help="Url for Anki-Connect")] = "http://127.0.0.1:8765",
+    anki_key: Annotated[str | None, typer.Option(help="Api key for Anki-Connect")] = None,
+):
     asyncio.run(export_flashcards(root_dir, force_scan, clear_cache, typst_cmd, anki_url, anki_key))
 
 
