@@ -56,7 +56,7 @@ class FlashcardParser:
         self.file_handlers = []
         self._load_file_hashes()
 
-    def _parse_file(self, file: FileHandler, preamble: str) -> List[Flashcard]:
+    def _parse_file(self, file: FileHandler, preamble: str | None) -> List[Flashcard]:
         cards = []
         tree = self.typst_parser.parse(file.get_bytes(), encoding="utf8")
         card_captures = self.flashcard_query.captures(tree.root_node)
@@ -133,14 +133,12 @@ class FlashcardParser:
                     return preamble
                 path = path.parent
 
-        for file in sorted(
-            glob.glob(f"{root_dir}/**/.anki.typ", include_hidden=True, recursive=True)
-        ):
+        for file in glob.glob(f"{root_dir}/**/.anki.typ", include_hidden=True, recursive=True):
             file = Path(file)
             if file.name == ".anki.typ":
                 preambles[file.parent] = file.read_text(encoding="utf-8")
 
-        for file in sorted(glob.glob(f"{scan_dir}/**/**.typ", recursive=True)):
+        for file in glob.glob(f"{scan_dir}/**/**.typ", recursive=True):
             file = Path(file)
             if single_file is not None and file != single_file:
                 continue
