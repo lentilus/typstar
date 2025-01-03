@@ -7,7 +7,7 @@ from typing import List, Tuple
 
 import appdirs
 import tree_sitter
-from tree_sitter_language_pack import get_language, get_parser
+from tree_sitter_typst import language as get_typst_language
 
 from .file_handler import FileHandler
 from .flashcard import Flashcard
@@ -49,8 +49,8 @@ class FlashcardParser:
     file_hashes_store_path: Path = Path(appdirs.user_state_dir("typstar") + "/file_hashes.json")
 
     def __init__(self):
-        self.typst_language = get_language("typst")
-        self.typst_parser = get_parser("typst")
+        self.typst_language = tree_sitter.Language(get_typst_language())
+        self.typst_parser = tree_sitter.Parser(self.typst_language)
         self.flashcard_query = self.typst_language.query(ts_flashcard_query)
         self.deck_query = self.typst_language.query(ts_deck_query)
         self.file_handlers = []
