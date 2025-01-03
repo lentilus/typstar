@@ -4,7 +4,7 @@ build-backend = "pdm.backend"
 
 [project]
 name = "typstar"
-version = "1.1.0"
+version = "1.1.1"
 description = "Neovim plugin for efficient note taking in Typst"
 authors = [
     { name = "arne314" }
@@ -14,10 +14,20 @@ requires-python = ">=3.11.10"
 dependencies = [
     "aiohttp>=3.11.11",
     "appdirs>=1.4.4",
-    "tree-sitter-language-pack>=0.2.0",
+    "tree-sitter>=0.23.2",
     "typer>=0.15.1",
+    "tree-sitter-typst @ git+https://github.com/uben0/tree-sitter-typst"
 ]
 
 [project.scripts]
 typstar-anki = "anki.main:main"
+
+[tool.ruff]
+lint.extend-select = ["I"]
+line-length = 100
+
+[dependency-groups]
+dev = [
+    "ruff>=0.8.5",
+]
 

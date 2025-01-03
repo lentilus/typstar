@@ -1,14 +1,13 @@
 import glob
 import json
 import re
-
 from functools import cache
 from pathlib import Path
 from typing import List, Tuple
 
 import appdirs
 import tree_sitter
-from tree_sitter_language_pack import get_language, get_parser
+from tree_sitter_typst import language as get_typst_language
 
 from .file_handler import FileHandler
 from .flashcard import Flashcard
@@ -36,7 +35,7 @@ ts_flashcard_query = """
 ts_deck_query = """
 ((comment) @deck)
 """
-deck_regex = re.compile(r"\W+ANKI:\s*(\S*)")
+deck_regex = re.compile(r"\W+ANKI:\s*([\S ]*)")
 
 
 class FlashcardParser:
@@ -50,14 +49,14 @@ class FlashcardParser:
     file_hashes_store_path: Path = Path(appdirs.user_state_dir("typstar") + "/file_hashes.json")
 
     def __init__(self):
-        self.typst_language = get_language("typst")
-        self.typst_parser = get_parser("typst")
+        self.typst_language = tree_sitter.Language(get_typst_language())
+        self.typst_parser = tree_sitter.Parser(self.typst_language)
         self.flashcard_query = self.typst_language.query(ts_flashcard_query)
         self.deck_query = self.typst_language.query(ts_deck_query)
         self.file_handlers = []
         self._load_file_hashes()
 
-    def _parse_file(self, file: FileHandler, preamble: str) -> List[Flashcard]:
+    def _parse_file(self, file: FileHandler, preamble: str | None) -> List[Flashcard]:
         cards = []
         tree = self.typst_parser.parse(file.get_bytes(), encoding="utf8")
         card_captures = self.flashcard_query.captures(tree.root_node)
@@ -72,17 +71,27 @@ class FlashcardParser:
         card_captures["front"].sort(key=row_compare)
         card_captures["back"].sort(key=row_compare)
 
-        deck_refs: List[Tuple[int, str]] = []
+        deck_refs: List[Tuple[int, str | None]] = []
         deck_refs_idx = -1
         current_deck = None
         if deck_captures:
             deck_captures["deck"].sort(key=row_compare)
             for comment in deck_captures["deck"]:
                 if match := deck_regex.match(file.get_node_content(comment)):
-                    deck_refs.append((comment.start_point.row, None if match[1].isspace() else match[1]))
+                    deck_refs.append(
+                        (
+                            comment.start_point.row,
+                            None if match[1].isspace() else match[1],
+                        )
+                    )
 
-        for note_id, front, back in zip(card_captures["id"], card_captures["front"], card_captures["back"]):
-            while deck_refs_idx < len(deck_refs) - 1 and back.end_point.row >= deck_refs[deck_refs_idx + 1][0]:
+        for note_id, front, back in zip(
+            card_captures["id"], card_captures["front"], card_captures["back"]
+        ):
+            while (
+                deck_refs_idx < len(deck_refs) - 1
+                and back.end_point.row >= deck_refs[deck_refs_idx + 1][0]
+            ):
                 deck_refs_idx += 1
                 current_deck = deck_refs[deck_refs_idx][1]
 
@@ -98,7 +107,7 @@ class FlashcardParser:
             cards.append(card)
         return cards
 
-    def parse_directory(self, root_dir: Path, force_scan: Path = None):
+    def parse_directory(self, root_dir: Path, force_scan: Path | None = None):
         single_file = None
         is_force_scan = force_scan is not None
         if is_force_scan:
@@ -110,7 +119,10 @@ class FlashcardParser:
         else:
             scan_dir = root_dir
 
-        print(f"Parsing flashcards in {scan_dir if single_file is None else single_file} ...", flush=True)
+        print(
+            f"Parsing flashcards in {scan_dir if single_file is None else single_file} ...",
+            flush=True,
+        )
         preambles = {}
         flashcards = []
 
@@ -121,12 +133,12 @@ class FlashcardParser:
                     return preamble
                 path = path.parent
 
-        for file in sorted(glob.glob(f"{root_dir}/**/.anki.typ", include_hidden=True, recursive=True)):
+        for file in glob.glob(f"{root_dir}/**/.anki.typ", include_hidden=True, recursive=True):
             file = Path(file)
             if file.name == ".anki.typ":
                 preambles[file.parent] = file.read_text(encoding="utf-8")
 
-        for file in sorted(glob.glob(f"{scan_dir}/**/**.typ", recursive=True)):
+        for file in glob.glob(f"{scan_dir}/**/**.typ", recursive=True):
             file = Path(file)
             if single_file is not None and file != single_file:
                 continue
