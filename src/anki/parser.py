@@ -35,7 +35,7 @@ ts_flashcard_query = """
 ts_deck_query = """
 ((comment) @deck)
 """
-deck_regex = re.compile(r"\W+ANKI:\s*(\S*)")
+deck_regex = re.compile(r"\W+ANKI:\s*([\S ]*)")
 
 
 class FlashcardParser:
