@@ -105,6 +105,13 @@ function M.setup()
             )
         end
         luasnip.add_snippets('typst', autosnippets)
+        local jsregexp_ok, _ = pcall(require, "luasnip-jsregexp")
+        if not jsregexp_ok then
+            jsregexp_ok, _ = pcall(require, "jsregexp")
+        end
+        if not jsregexp_ok then
+            vim.notify("WARNING: Most snippets won't work as jsregexp is not installed", vim.log.levels.WARN)
+        end
     end
 end
 
