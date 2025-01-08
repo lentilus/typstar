@@ -31,12 +31,18 @@ function M.cap(i)
     return luasnip.function_node(function(_, snip) return snip.captures[i] end)
 end
 
-function M.get_visual(args, parent)
-    if (#parent.snippet.env.LS_SELECT_RAW > 0) then
-        return luasnip.snippet_node(nil, luasnip.insert_node(1, parent.snippet.env.LS_SELECT_RAW))
-    else -- If LS_SELECT_RAW is empty, return a blank insert node
-        return luasnip.snippet_node(nil, luasnip.insert_node(1))
-    end
+function M.visual(idx, default)
+    default = default or ''
+    return luasnip.dynamic_node(
+        idx,
+        function(args, parent)
+            if (#parent.snippet.env.LS_SELECT_RAW > 0) then
+                return luasnip.snippet_node(nil, luasnip.text_node(parent.snippet.env.LS_SELECT_RAW))
+            else -- If LS_SELECT_RAW is empty, return an insert node
+                return luasnip.snippet_node(nil, luasnip.insert_node(1, default))
+            end
+        end
+    )
 end
 
 function M.ri(insert_node_id)
@@ -62,7 +68,7 @@ function M.snip(trigger, expand, insert, condition, priority, wordTrig)
 end
 
 function M.start_snip(trigger, expand, insert, condition, priority)
-    return M.snip('^\\s*' .. trigger, expand, insert, condition, priority)
+    return M.snip('^(\\s*)' .. trigger, '<>' .. expand, { M.cap(1), unpack(insert) }, condition, priority)
 end
 
 function M.engine(trigger, opts)

@@ -19,10 +19,10 @@ local default_config = {
     snippets = {
         enable = true,
         modules = { -- enable modules from ./snippets
-            'document',
             'letters',
             'math',
             'matrix',
+            'markup',
             'visual',
         }
     },
