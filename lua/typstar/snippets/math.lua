@@ -20,6 +20,7 @@ return {
 
     -- boolean logic
     snip('no', 'not ', {}, math),
+    snip('iff', '<<=>> ', {}, math),
 
     -- relations
     snip('el', '= ', {}, math),
@@ -60,10 +61,11 @@ return {
     snip('Oo', 'compose ', {}, math),
     snip('iso', 'tilde.equiv ', {}, math),
     snip('ep', 'exp(<>) ', { i(1, '1') }, math),
-    snip('rrn', 'RR^n ', {}, math),
     snip('cc', 'cases(\n\t<>\n)\\', { i(1, '1') }, math),
+    snip('(K|M|N|Q|R|S|Z)([\\dn]) ', '<><>^<> ', { cap(1), cap(1), cap(2) }, math),
     snip('(.*)iv', '<>^(-1)', { cap(1) }, math),
     snip('(.*)sr', '<>^2', { cap(1) }, math),
+    snip('(.*)cb', '<>^3', { cap(1) }, math),
     snip('(.*)jj', '<>_(<>)', { cap(1), i(1, 'n') }, math),
     snip('(.*)kk', '<>^(<>)', { cap(1), i(1, 'n') }, math),
 
