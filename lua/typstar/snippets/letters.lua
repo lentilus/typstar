@@ -24,16 +24,19 @@ local greek_letters_map = {
     ['m'] = 'mu',
     ['n'] = 'nu',
     ['o'] = 'omega',
-    ['p'] = 'pi',
+    ['p'] = 'psi',
     ['q'] = 'eta',
     ['r'] = 'rho',
     ['s'] = 'sigma',
     ['t'] = 'tau',
+    ['v'] = 'nu',
+    ['w'] = 'omega',
     ['x'] = 'xi',
+    ['y'] = 'upsilon',
     ['z'] = 'zeta',
 }
-local greek_letters = {}
 local greek_keys = {}
+local greek_letters_set = {}
 local common_indices = { '\\d+', '[i-n]' }
 local index_conflicts = { 'in', 'ln', 'pi', 'xi' }
 local index_conflicts_set = {}
@@ -47,8 +50,10 @@ local greek_full = {}
 for latin, greek in pairs(greek_letters_map) do
     greek_full[latin] = greek
     greek_full[latin:upper()] = upper_first(greek)
-    table.insert(greek_letters, greek)
-    table.insert(greek_letters, upper_first(greek))
+    if not greek_letters_set[greek] then
+        table.insert(greek_letters_set, greek)
+        table.insert(greek_letters_set, upper_first(greek))
+    end
     table.insert(greek_keys, latin)
     table.insert(greek_keys, latin:upper())
 end
@@ -59,7 +64,7 @@ end
 
 greek_letters_map = greek_full
 trigger_greek = table.concat(greek_keys, '|')
-trigger_index_pre = '[A-Za-z]' .. '|' .. table.concat(greek_letters, '|')
+trigger_index_pre = '[A-Za-z]' .. '|' .. table.concat(greek_letters_set, '|')
 trigger_index_post = table.concat(common_indices, '|')
 
 local get_greek = function(_, snippet) return s(nil, t(greek_letters_map[snippet.captures[1]])) end
