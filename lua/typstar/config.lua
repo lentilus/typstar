@@ -24,14 +24,14 @@ local default_config = {
             'matrix',
             'markup',
             'visual',
-        }
+        },
     },
 }
 
 function M.merge_config(args)
     M.config = vim.tbl_deep_extend('force', default_config, args or {})
-    M.config.excalidraw.templatePath = M.config.excalidraw.templatePath or
-        {
+    M.config.excalidraw.templatePath = M.config.excalidraw.templatePath
+        or {
             ['%.excalidraw%.md$'] = M.config.typstarRoot .. '/res/excalidraw_template.excalidraw.md',
         }
 end

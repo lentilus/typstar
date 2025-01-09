@@ -8,7 +8,6 @@ local visual = helper.visual
 local snip = helper.snip
 local start = helper.start_snip
 
-
 local ctheorems = {
     { 'tem', 'theorem' },
     { 'pro', 'proof' },
@@ -21,9 +20,9 @@ local ctheorems = {
 }
 
 local wrappings = {
-    { 'll',  '$',           '$', '1+1' },
-    { 'BLD', '*',           '*', 'abc' },
-    { 'ITL', '_',           '_', 'abc' },
+    { 'll', '$', '$', '1+1' },
+    { 'BLD', '*', '*', 'abc' },
+    { 'ITL', '_', '_', 'abc' },
     { 'HIG', '#highlight[', ']', 'abc' },
     { 'UND', '#underline[', ']', 'abc' },
 }
@@ -44,8 +43,8 @@ end
 
 return {
     start('dm', '$\n<>\t<>\n<>$', { cap(1), visual(1), cap(1) }, markup),
-    start('fla', '#flashcard(0)[<>][\n<>\t<>\n<>]', { i(1, "flashcard"), cap(1), visual(2), cap(1) }, markup),
-    start('flA', '#flashcard(0, "<>")[\n<>\t<>\n<>]', { i(1, "flashcard"), cap(1), visual(2), cap(1) }, markup),
+    start('fla', '#flashcard(0)[<>][\n<>\t<>\n<>]', { i(1, 'flashcard'), cap(1), visual(2), cap(1) }, markup),
+    start('flA', '#flashcard(0, "<>")[\n<>\t<>\n<>]', { i(1, 'flashcard'), cap(1), visual(2), cap(1) }, markup),
     snip('IMP', '$=>>$ ', {}, markup),
     snip('IFF', '$<<=>>$ ', {}, markup),
     unpack(document_snippets),
