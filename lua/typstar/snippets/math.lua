@@ -20,6 +20,8 @@ return {
 
     -- boolean logic
     snip('no', 'not ', {}, math),
+    snip('ip', '==>> ', {}, math),
+    snip('ib', '<<== ', {}, math),
 
     -- relations
     snip('el', '= ', {}, math),
@@ -41,7 +43,8 @@ return {
     snip('bxx', 'times.square ', {}, math),
 
     -- sets
-    snip('set', '{<>}', { i(1) }, math),
+    -- 'st' to '{<>} in ./visual.lua
+    snip('set', '{<>|<>}', { i(1), i(2) }, math),
     snip('es', 'emptyset ', {}, math),
     snip('ses', '{emptyset} ', {}, math),
     snip('sp', 'supset ', {}, math),
