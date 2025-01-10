@@ -57,6 +57,7 @@ To render the flashcard in your document as well add some code like this
 ```
 
 - Add a comment like `// ANKI: MY::DECK` to your document to set a deck used for all flashcards after this comment (You can use multiple decks per file)
+- Add a file named `.anki` containing a deck name to define a default deck on a directory base
 - Add a file named `.anki.typ` to define a preamble on a directory base. You can find the default preamble [here](./src/anki/typst_compiler.py).
 - Tip: Despite the use of SVGs you can still search your flashcards in Anki as the typst source is added into an invisible html paragraph
 
