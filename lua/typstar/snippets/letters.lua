@@ -8,7 +8,6 @@ local cap = helper.cap
 local math = helper.in_math
 local markup = helper.in_markup
 
-
 local letter_snippets = {}
 local greek_letters_map = {
     ['a'] = 'alpha',
@@ -25,33 +24,36 @@ local greek_letters_map = {
     ['m'] = 'mu',
     ['n'] = 'nu',
     ['o'] = 'omega',
-    ['p'] = 'pi',
+    ['p'] = 'psi',
     ['q'] = 'eta',
     ['r'] = 'rho',
     ['s'] = 'sigma',
     ['t'] = 'tau',
+    ['v'] = 'nu',
+    ['w'] = 'omega',
     ['x'] = 'xi',
+    ['y'] = 'upsilon',
     ['z'] = 'zeta',
 }
-local greek_letters = {}
 local greek_keys = {}
+local greek_letters_set = {}
 local common_indices = { '\\d+', '[i-n]' }
-local index_conflicts = { 'in', 'ln', 'pi', 'xi' }
+local index_conflicts = { 'in', 'ln', 'pi', 'xi', 'ak', 'sk' }
 local index_conflicts_set = {}
 local trigger_greek = ''
 local trigger_index_pre = ''
 local trigger_index_post = ''
 
-local upper_first = function(str)
-    return str:sub(1, 1):upper() .. str:sub(2, -1)
-end
+local upper_first = function(str) return str:sub(1, 1):upper() .. str:sub(2, -1) end
 
 local greek_full = {}
 for latin, greek in pairs(greek_letters_map) do
     greek_full[latin] = greek
     greek_full[latin:upper()] = upper_first(greek)
-    table.insert(greek_letters, greek)
-    table.insert(greek_letters, upper_first(greek))
+    if not greek_letters_set[greek] then
+        table.insert(greek_letters_set, greek)
+        table.insert(greek_letters_set, upper_first(greek))
+    end
     table.insert(greek_keys, latin)
     table.insert(greek_keys, latin:upper())
 end
@@ -62,31 +64,36 @@ end
 
 greek_letters_map = greek_full
 trigger_greek = table.concat(greek_keys, '|')
-trigger_index_pre = '[A-Za-z]' .. '|' .. table.concat(greek_letters, '|')
+trigger_index_pre = '[A-Za-z]' .. '|' .. table.concat(greek_letters_set, '|')
 trigger_index_post = table.concat(common_indices, '|')
 
-local get_greek = function(_, snippet)
-    return s(nil, t(greek_letters_map[snippet.captures[1]]))
-end
+local get_greek = function(_, snippet) return s(nil, t(greek_letters_map[snippet.captures[1]])) end
 
 local get_index = function(_, snippet)
     local letter, index = snippet.captures[1], snippet.captures[2]
     local trigger = letter .. index
-    if index_conflicts_set[trigger] then
-        return s(nil, t(trigger))
-    end
+    if index_conflicts_set[trigger] then return s(nil, t(trigger)) end
     return s(nil, t(letter .. '_' .. index))
 end
 
 table.insert(letter_snippets, snip(':([A-Za-z0-9])', '$<>$ ', { cap(1) }, markup))
 table.insert(letter_snippets, snip(';(' .. trigger_greek .. ')', '$<>$ ', { d(1, get_greek) }, markup))
 table.insert(letter_snippets, snip(';(' .. trigger_greek .. ')', '<>', { d(1, get_greek) }, math))
-table.insert(letter_snippets,
-    snip('\\$(' .. trigger_index_pre .. ')\\$' .. '(' .. trigger_index_post .. ') ',
-        '$<>$ ', { d(1, get_index) }, markup, 500))
-table.insert(letter_snippets,
-    snip('(' .. trigger_index_pre .. ')' .. '(' .. trigger_index_post .. ') ', '<> ', { d(1, get_index) }, math, 200))
+table.insert(
+    letter_snippets,
+    snip(
+        '\\$(' .. trigger_index_pre .. ')\\$' .. '(' .. trigger_index_post .. ') ',
+        '$<>$ ',
+        { d(1, get_index) },
+        markup,
+        500
+    )
+)
+table.insert(
+    letter_snippets,
+    snip('(' .. trigger_index_pre .. ')' .. '(' .. trigger_index_post .. ') ', '<> ', { d(1, get_index) }, math, 200)
+)
 
 return {
-    unpack(letter_snippets)
+    unpack(letter_snippets),
 }

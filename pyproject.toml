@@ -4,7 +4,7 @@ build-backend = "pdm.backend"
 
 [project]
 name = "typstar"
-version = "1.1.1"
+version = "1.2.0"
 description = "Neovim plugin for efficient note taking in Typst"
 authors = [
     { name = "arne314" }

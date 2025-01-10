@@ -61,9 +61,7 @@ local lmat = function(_, sp)
         ins_indx = ins_indx + 1
         for k = 2, cols do
             table.insert(nodes, t(', '))
-            if k == cols then
-                table.insert(nodes, t('dots, '))
-            end
+            if k == cols then table.insert(nodes, t('dots, ')) end
             if j == k then
                 table.insert(nodes, r(ins_indx, tostring(j) .. 'x' .. tostring(k), i(1, '1')))
             else

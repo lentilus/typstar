@@ -1,7 +1,6 @@
-import glob
 import json
 import re
-from functools import cache
+from glob import glob
 from pathlib import Path
 from typing import List, Tuple
 
@@ -9,6 +8,7 @@ import appdirs
 import tree_sitter
 from tree_sitter_typst import language as get_typst_language
 
+from .config_parser import RecursiveConfigParser
 from .file_handler import FileHandler
 from .flashcard import Flashcard
 
@@ -38,6 +38,8 @@ ts_deck_query = """
 deck_regex = re.compile(r"\W+ANKI:\s*([\S ]*)")
 
 
+
+
 class FlashcardParser:
     typst_language: tree_sitter.Language
     typst_parser: tree_sitter.Parser
@@ -56,7 +58,7 @@ class FlashcardParser:
         self.file_handlers = []
         self._load_file_hashes()
 
-    def _parse_file(self, file: FileHandler, preamble: str | None) -> List[Flashcard]:
+    def _parse_file(self, file: FileHandler, preamble: str | None, default_deck: str | None) -> List[Flashcard]:
         cards = []
         tree = self.typst_parser.parse(file.get_bytes(), encoding="utf8")
         card_captures = self.flashcard_query.captures(tree.root_node)
@@ -73,7 +75,7 @@ class FlashcardParser:
 
         deck_refs: List[Tuple[int, str | None]] = []
         deck_refs_idx = -1
-        current_deck = None
+        current_deck = default_deck
         if deck_captures:
             deck_captures["deck"].sort(key=row_compare)
             for comment in deck_captures["deck"]:
@@ -108,6 +110,7 @@ class FlashcardParser:
         return cards
 
     def parse_directory(self, root_dir: Path, force_scan: Path | None = None):
+        flashcards = []
         single_file = None
         is_force_scan = force_scan is not None
         if is_force_scan:
@@ -123,22 +126,9 @@ class FlashcardParser:
             f"Parsing flashcards in {scan_dir if single_file is None else single_file} ...",
             flush=True,
         )
-        preambles = {}
-        flashcards = []
+        configs = RecursiveConfigParser(root_dir, {".anki", ".anki.typ"})
 
-        @cache
-        def get_preamble(path: Path) -> str | None:
-            while path != root_dir.parent:
-                if preamble := preambles.get(path):
-                    return preamble
-                path = path.parent
-
-        for file in glob.glob(f"{root_dir}/**/.anki.typ", include_hidden=True, recursive=True):
-            file = Path(file)
-            if file.name == ".anki.typ":
-                preambles[file.parent] = file.read_text(encoding="utf-8")
-
-        for file in glob.glob(f"{scan_dir}/**/**.typ", recursive=True):
+        for file in glob(f"{scan_dir}/**/**.typ", recursive=True):
             file = Path(file)
             if single_file is not None and file != single_file:
                 continue
@@ -146,7 +136,7 @@ class FlashcardParser:
             fh = FileHandler(file)
             file_changed = self._hash_changed(fh)
             if is_force_scan or file_changed:
-                cards = self._parse_file(fh, get_preamble(file.parent))
+                cards = self._parse_file(fh, configs.get_config(file, ".anki.typ"), configs.get_config(file, ".anki"))
                 self.file_handlers.append((fh, cards))
                 flashcards.extend(cards)
         return flashcards

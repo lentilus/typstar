@@ -12,13 +12,20 @@ Neovim plugin for efficient note taking in Typst
 Use `:TypstarToggleSnippets` to toggle all snippets at any time.
 Available snippets can mostly be intuitively derived from [here](././lua/typstar/snippets), they include:
 
+Markup snippets:
+- Begin inline math with `ll` and multiline math with `dm`
+- [Markup shorthands](./lua/typstar/snippets/markup.lua) (e.g. `HIG` &#8594; `#highlight[<cursor>]`, `IMP` &#8594; `$=>$ `)
+- [ctheorems shorthands](./lua/typstar/snippets/markup.lua) (e.g. `tem` &#8594; empty theorem, `exa` &#8594; empty example)
+- [Flashcards](#anki): `fla` and `flA`
+- All above snippets support visual mode via the [selection key](#installation)
+
+Math snippets:
+- [Many shorthands](./lua/typstar/snippets/math.lua) for mathematical expressions
 - Alphanumeric characters: `:<char>` &#8594; `$<char>$ ` in markup (e.g. `:X` &#8594; `$X$ `, `:5` &#8594; `$5$ `)
 - Greek letters: `;<latin>` &#8594; `<greek>` in math and `$<greek>$ ` in markup (e.g. `;a` &#8594; `alpha`/`$alpha$ `)
 - Common indices (numbers and letters `i-n`): `<letter><index>` &#8594; `<letter>_<index>` in math and `$<letter>$<index> ` &#8594; `$<letter>_<index>$ ` in markup (e.g `A314` &#8594; `A_314`, `$alpha$n ` &#8594; `$alpha_n$ `)
 - Wrapping of any mathematical expression (see [operations](./lua/typstar/snippets/visual.lua), works nested, multiline and in visual mode via the [selection key](#installation)): `<expression><operation>` &#8594; `<operation>(<expression>)` (e.g. `(a^2+b^2)rt` &#8594; `sqrt(a^2+b^2)`, `lambdatd` &#8594; `tilde(lambda)`, `(1+1)sQ` &#8594; `[1+1]`, `(1+1)sq` &#8594; `[(1+1)]`)
 - Matrices: `<size>ma` and `<size>lma` (e.g. `23ma` &#8594; 2x3 matrix)
-- [ctheorems shorthands](./lua/typstar/snippets/document.lua) (e.g. `tem` &#8594; empty theorem, `exa` &#8594; empty example)
-- [Many shorthands](./lua/typstar/snippets/math.lua) for mathematical expressions
 
 Note that you can enable and disable collections of snippets in the [config](#configuration).
 
@@ -50,6 +57,7 @@ To render the flashcard in your document as well add some code like this
 ```
 
 - Add a comment like `// ANKI: MY::DECK` to your document to set a deck used for all flashcards after this comment (You can use multiple decks per file)
+- Add a file named `.anki` containing a deck name to define a default deck on a directory base
 - Add a file named `.anki.typ` to define a preamble on a directory base. You can find the default preamble [here](./src/anki/typst_compiler.py).
 - Tip: Despite the use of SVGs you can still search your flashcards in Anki as the typst source is added into an invisible html paragraph
 
@@ -72,9 +80,9 @@ require('typstar').setup({
 
 ### Snippets
 1. Install [LuaSnip](https://github.com/L3MON4D3/LuaSnip/), set `enable_autosnippets = true` and set a visual mode selection key (e.g. `store_selection_keys = '<Tab>'`) in the configuration
-2. Install [jsregexp](https://github.com/kmarius/jsregexp) as described [here](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#transformations) (running `:lua require('jsregexp')` in nvim should not result in an error)
+2. Install [jsregexp](https://github.com/kmarius/jsregexp) as described [here](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#transformations) (You will see a warning on startup if jsregexp isn't installed properly)
 3. Install [nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter) and run `:TSInstall typst`
-4. Optional: Setup [ctheorems](https://typst.app/universe/package/ctheorems/) with names like [here](./lua/typstar/snippets/document.lua)
+4. Optional: Setup [ctheorems](https://typst.app/universe/package/ctheorems/) with names like [here](./lua/typstar/snippets/markup.lua)
 
 ### Excalidraw
 1. Install [Obsidian](https://obsidian.md/) and create a vault in your typst note taking directory
