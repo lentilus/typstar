@@ -11,10 +11,12 @@ local math = helper.in_math
 local snip = helper.snip
 
 local snippets = {}
+
 local operations = { -- first boolean: existing brackets should be kept; second boolean: brackets should be added
     { 'vi', '1/', '', true, false },
     { 'bb', '(', ')', true, false }, -- add round brackets
     { 'sq', '[', ']', true, false }, -- add square brackets
+    { 'st', '{', '}', true, false }, -- add curly brackets 
     { 'bB', '(', ')', false, false }, -- replace with round brackets
     { 'sQ', '[', ']', false, false }, -- replace with square brackets
     { 'BB', '', '', false, false }, -- remove brackets
