@@ -22,7 +22,7 @@ return {
     snip('no', 'not ', {}, math),
     snip('ip', '==>> ', {}, math),
     snip('ib', '<<== ', {}, math),
-    snip('iff', '<<=>> ', {}, math),
+    snip('iff', '<<==>> ', {}, math),
 
     -- relations
     snip('el', '= ', {}, math),
