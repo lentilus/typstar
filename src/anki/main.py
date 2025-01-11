@@ -1,9 +1,9 @@
 import asyncio
 import os
 from pathlib import Path
-from typing_extensions import Annotated
 
 import typer
+from typing_extensions import Annotated
 
 from anki.anki_api import AnkiConnectApi
 from anki.parser import FlashcardParser

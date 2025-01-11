@@ -38,8 +38,6 @@ ts_deck_query = """
 deck_regex = re.compile(r"\W+ANKI:\s*([\S ]*)")
 
 
-
-
 class FlashcardParser:
     typst_language: tree_sitter.Language
     typst_parser: tree_sitter.Parser
@@ -58,7 +56,9 @@ class FlashcardParser:
         self.file_handlers = []
         self._load_file_hashes()
 
-    def _parse_file(self, file: FileHandler, preamble: str | None, default_deck: str | None) -> List[Flashcard]:
+    def _parse_file(
+        self, file: FileHandler, preamble: str | None, default_deck: str | None
+    ) -> List[Flashcard]:
         cards = []
         tree = self.typst_parser.parse(file.get_bytes(), encoding="utf8")
         card_captures = self.flashcard_query.captures(tree.root_node)
@@ -136,7 +136,9 @@ class FlashcardParser:
             fh = FileHandler(file)
             file_changed = self._hash_changed(fh)
             if is_force_scan or file_changed:
-                cards = self._parse_file(fh, configs.get_config(file, ".anki.typ"), configs.get_config(file, ".anki"))
+                cards = self._parse_file(
+                    fh, configs.get_config(file, ".anki.typ"), configs.get_config(file, ".anki")
+                )
                 self.file_handlers.append((fh, cards))
                 flashcards.extend(cards)
         return flashcards

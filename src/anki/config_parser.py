@@ -14,11 +14,15 @@ class RecursiveConfigParser:
         self.targets = set(targets)
         self.results = defaultdict(dict)
         self._parse_recursive()
-    
+
     def _parse_recursive(self):
         files = []
         for target in self.targets:
-            files.extend(glob(f"{self.dir}/**/{target}", include_hidden=target.startswith("."), recursive=True))
+            files.extend(
+                glob(
+                    f"{self.dir}/**/{target}", include_hidden=target.startswith("."), recursive=True
+                )
+            )
         for file in files:
             file = Path(file)
             if file.name in self.targets:
