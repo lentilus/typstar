@@ -14,7 +14,7 @@ Available snippets can mostly be intuitively derived from [here](././lua/typstar
 
 Markup snippets:
 - Begin inline math with `ll` and multiline math with `dm`
-- [Markup shorthands](./lua/typstar/snippets/markup.lua) (e.g. `HIG` &#8594; `#highlight[<cursor>]`, `IMP` &#8594; `$=>$ `)
+- [Markup shorthands](./lua/typstar/snippets/markup.lua) (e.g. `HIG` &#8594; `#highlight[<cursor>]`, `IMP` &#8594; `$==>$ `)
 - [ctheorems shorthands](./lua/typstar/snippets/markup.lua) (e.g. `tem` &#8594; empty theorem, `exa` &#8594; empty example)
 - [Flashcards](#anki): `fla` and `flA`
 - All above snippets support visual mode via the [selection key](#installation)
@@ -23,7 +23,8 @@ Math snippets:
 - [Many shorthands](./lua/typstar/snippets/math.lua) for mathematical expressions
 - Alphanumeric characters: `:<char>` &#8594; `$<char>$ ` in markup (e.g. `:X` &#8594; `$X$ `, `:5` &#8594; `$5$ `)
 - Greek letters: `;<latin>` &#8594; `<greek>` in math and `$<greek>$ ` in markup (e.g. `;a` &#8594; `alpha`/`$alpha$ `)
-- Common indices (numbers and letters `i-n`): `<letter><index>` &#8594; `<letter>_<index>` in math and `$<letter>$<index> ` &#8594; `$<letter>_<index>$ ` in markup (e.g `A314` &#8594; `A_314`, `$alpha$n ` &#8594; `$alpha_n$ `)
+- Common indices (numbers and letters `i-n`): `<letter><index> ` &#8594; `<letter>_<index> ` in math and `$<letter>$<index> ` &#8594; `$<letter>_<index>$ ` in markup (e.g `A314 ` &#8594; `A_314 `, `$alpha$n ` &#8594; `$alpha_n$ `)
+- Series of numbered letters: `<letter> ot<optional last index> ` &#8594; `<letter>_1, <letter>_2, ... ` (e.g. `a ot ` &#8594; `a_1, a_2, ... `, `a ot4 ` &#8594; `a_1, a_2, a_3, a_4 `, `alpha ot k ` &#8594; `alpha_1, alpha_2, ..., alpha_k `)
 - Wrapping of any mathematical expression (see [operations](./lua/typstar/snippets/visual.lua), works nested, multiline and in visual mode via the [selection key](#installation)): `<expression><operation>` &#8594; `<operation>(<expression>)` (e.g. `(a^2+b^2)rt` &#8594; `sqrt(a^2+b^2)`, `lambdatd` &#8594; `tilde(lambda)`, `(1+1)sQ` &#8594; `[1+1]`, `(1+1)sq` &#8594; `[(1+1)]`)
 - Matrices: `<size>ma` and `<size>lma` (e.g. `23ma` &#8594; 2x3 matrix)
 

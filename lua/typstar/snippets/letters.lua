@@ -76,24 +76,41 @@ local get_index = function(_, snippet)
     return s(nil, t(letter .. '_' .. index))
 end
 
-table.insert(letter_snippets, snip(':([A-Za-z0-9])', '$<>$ ', { cap(1) }, markup))
-table.insert(letter_snippets, snip(';(' .. trigger_greek .. ')', '$<>$ ', { d(1, get_greek) }, markup))
-table.insert(letter_snippets, snip(';(' .. trigger_greek .. ')', '<>', { d(1, get_greek) }, math))
-table.insert(
-    letter_snippets,
+local get_series = function(_, snippet)
+    local letter, target = snippet.captures[1], snippet.captures[2]
+    local target_num = tonumber(target)
+    local result
+    if target_num then
+        local res = {}
+        for n = 1, target_num do
+            table.insert(res, string.format('%s_%d', letter, n))
+            if n ~= target_num then table.insert(res, ', ') end
+        end
+        result = table.concat(res, '')
+    else
+        result = string.format('%s_1, %s_2, ... %s_%s', letter, letter, letter, target)
+    end
+    return s(nil, t(result))
+end
+
+return {
+    -- latin/greek
+    snip(':([A-Za-z0-9])', '$<>$ ', { cap(1) }, markup),
+    snip(';(' .. trigger_greek .. ')', '$<>$ ', { d(1, get_greek) }, markup),
+    snip(';(' .. trigger_greek .. ')', '<>', { d(1, get_greek) }, math),
+
+    -- indices
     snip(
         '\\$(' .. trigger_index_pre .. ')\\$' .. '(' .. trigger_index_post .. ') ',
         '$<>$ ',
         { d(1, get_index) },
         markup,
         500
-    )
-)
-table.insert(
-    letter_snippets,
-    snip('(' .. trigger_index_pre .. ')' .. '(' .. trigger_index_post .. ') ', '<> ', { d(1, get_index) }, math, 200)
-)
+    ),
+    snip('(' .. trigger_index_pre .. ')' .. '(' .. trigger_index_post .. ') ', '<> ', { d(1, get_index) }, math, 200),
 
-return {
+    -- series of numbered letters
+    snip('(' .. trigger_index_pre .. ') ot ', '<>_1, <>_2, ... ', { cap(1), cap(1) }, math), -- a_1, a_2, ...
+    snip('(' .. trigger_index_pre .. ') ot(\\w+) ', '<> ', { d(1, get_series) }, math), -- a_1, a_2, ... a_j or a_1, a_2, a_2, a_3, a_4, a_5
     unpack(letter_snippets),
 }
