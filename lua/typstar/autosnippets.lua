@@ -44,14 +44,14 @@ function M.ri(insert_node_id)
     return luasnip.function_node(function(args) return args[1][1] end, insert_node_id)
 end
 
-function M.snip(trigger, expand, insert, condition, priority, wordTrig)
+function M.snip(trigger, expand, insert, condition, priority)
     priority = priority or 1000
     return luasnip.snippet(
         {
             trig = trigger,
             trigEngine = M.engine,
             trigEngineOpts = { condition = condition },
-            wordTrig = wordTrig,
+            wordTrig = false,
             priority = priority,
             snippetType = 'autosnippet',
         },
