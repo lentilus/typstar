@@ -8,7 +8,6 @@ local cap = helper.cap
 local math = helper.in_math
 local markup = helper.in_markup
 
-local letter_snippets = {}
 local greek_letters_map = {
     ['a'] = 'alpha',
     ['b'] = 'beta',
@@ -40,6 +39,8 @@ local greek_letters_set = {}
 local common_indices = { '\\d+', '[i-n]' }
 local index_conflicts = { 'in', 'ln', 'pi', 'xi', 'el' }
 local index_conflicts_set = {}
+local punctuation_prepend_space = { ',', ';' }
+local punctuation_prepend_space_set = {}
 local trigger_greek = ''
 local trigger_index_pre = ''
 local trigger_index_post = ''
@@ -58,9 +59,14 @@ for latin, greek in pairs(greek_letters_map) do
     table.insert(greek_keys, latin:upper())
 end
 
-for _, conflict in ipairs(index_conflicts) do
-    index_conflicts_set[conflict] = true
+local generate_bool_set = function(arr, target)
+    for _, val in ipairs(arr) do
+        target[val] = true
+    end
 end
+
+generate_bool_set(index_conflicts, index_conflicts_set)
+generate_bool_set(punctuation_prepend_space, punctuation_prepend_space_set)
 
 greek_letters_map = greek_full
 trigger_greek = table.concat(greek_keys, '|')
@@ -69,8 +75,9 @@ trigger_index_post = table.concat(common_indices, '|')
 
 local get_greek = function(_, snippet) return s(nil, t(greek_letters_map[snippet.captures[1]])) end
 
-local get_index = function(_, snippet)
-    local letter, index = snippet.captures[1], snippet.captures[2]
+local get_index = function(_, snippet, _, idx1, idx2)
+    print(idx1, idx2)
+    local letter, index = snippet.captures[idx1], snippet.captures[idx2]
     local trigger = letter .. index
     if index_conflicts_set[trigger] then return s(nil, t(trigger)) end
     return s(nil, t(letter .. '_' .. index))
@@ -93,6 +100,12 @@ local get_series = function(_, snippet)
     return s(nil, t(result))
 end
 
+local prepend_space = function(_, snippet, _, idx)
+    local punc = snippet.captures[idx]
+    if punctuation_prepend_space_set[punc] then punc = punc .. ' ' end
+    return s(nil, t(punc))
+end
+
 return {
     -- latin/greek
     snip(':([A-Za-z0-9])', '$<>$ ', { cap(1) }, markup),
@@ -101,16 +114,21 @@ return {
 
     -- indices
     snip(
-        '\\$(' .. trigger_index_pre .. ')\\$' .. '(' .. trigger_index_post .. ') ',
-        '$<>$ ',
-        { d(1, get_index) },
+        '\\$(' .. trigger_index_pre .. ')\\$' .. '(' .. trigger_index_post .. ')([^\\w])',
+        '$<>$<>',
+        { d(1, get_index, {}, { user_args = { 1, 2 } }), d(2, prepend_space, {}, { user_args = { 3 } }) },
         markup,
         500
     ),
-    snip('(' .. trigger_index_pre .. ')' .. '(' .. trigger_index_post .. ') ', '<> ', { d(1, get_index) }, math, 200),
+    snip(
+        '([^\\w])(' .. trigger_index_pre .. ')' .. '(' .. trigger_index_post .. ')([^\\w])',
+        '<><><>',
+        { cap(1), d(1, get_index, {}, { user_args = { 2, 3 } }), d(2, prepend_space, {}, { user_args = { 4 } }) },
+        math,
+        200
+    ),
 
     -- series of numbered letters
     snip('(' .. trigger_index_pre .. ') ot ', '<>_1, <>_2, ... ', { cap(1), cap(1) }, math), -- a_1, a_2, ...
     snip('(' .. trigger_index_pre .. ') ot(\\w+) ', '<> ', { d(1, get_series) }, math), -- a_1, a_2, ... a_j or a_1, a_2, a_2, a_3, a_4, a_5
-    unpack(letter_snippets),
 }
