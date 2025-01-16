@@ -34,8 +34,8 @@ return {
     snip('ge', '>>= ', {}, math),
 
     -- operators
-    snip('ak([^k ])', '+ <>', { cap(1) }, math, 100),
-    snip('sk([^k ])', '- <>', { cap(1) }, math, 100),
+    snip('ak([^k ])', '+ <>', { cap(1) }, math, 100, false),
+    snip('sk([^k ])', '- <>', { cap(1) }, math, 100, false),
     snip('oak', 'plus.circle ', {}, math),
     snip('bak', 'plus.square ', {}, math),
     snip('mak', 'plus.minus ', {}, math),
@@ -66,11 +66,11 @@ return {
     snip('ep', 'exp(<>) ', { i(1, '1') }, math),
     snip('cc', 'cases(\n\t<>\n)\\', { i(1, '1') }, math),
     snip('(K|M|N|Q|R|S|Z)([\\dn]) ', '<><>^<> ', { cap(1), cap(1), cap(2) }, math),
-    snip('(.*)iv', '<>^(-1) ', { cap(1) }, math),
-    snip('(.*)sr', '<>^2 ', { cap(1) }, math),
-    snip('(.*)cb', '<>^3 ', { cap(1) }, math),
-    snip('(.*)jj', '<>_(<>) ', { cap(1), i(1, 'n') }, math),
-    snip('(.*)kk', '<>^(<>) ', { cap(1), i(1, 'n') }, math),
+    snip('iv', '^(-1) ', {}, math, 500, false),
+    snip('sr', '^2 ', {}, math, 500, false),
+    snip('cb', '^3 ', {}, math, 500, false),
+    snip('jj', '_(<>) ', { i(1, 'n') }, math, 500, false),
+    snip('kk', '^(<>) ', { i(1, 'n') }, math, 500, false),
 
     snip('ddx', '(d <>)(d <>) ', { i(1, 'f'), i(2, 'x') }, math),
     snip('it', 'integral ', {}, math, 900),

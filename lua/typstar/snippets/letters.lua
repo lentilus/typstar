@@ -121,9 +121,9 @@ return {
         500
     ),
     snip(
-        '([^\\w])(' .. trigger_index_pre .. ')' .. '(' .. trigger_index_post .. ')([^\\w])',
-        '<><><>',
-        { cap(1), d(1, get_index, {}, { user_args = { 2, 3 } }), d(2, prepend_space, {}, { user_args = { 4 } }) },
+        '(' .. trigger_index_pre .. ')' .. '(' .. trigger_index_post .. ')([^\\w])',
+        '<><>',
+        { d(1, get_index, {}, { user_args = { 1, 2 } }), d(2, prepend_space, {}, { user_args = { 3 } }) },
         math,
         200
     ),
