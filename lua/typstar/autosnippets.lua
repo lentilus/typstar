@@ -91,7 +91,15 @@ function M.engine(trigger, opts)
     -- matching
     return function(line, trig)
         if not M.snippets_toggle or not condition() then return nil end
-        if fixed_length ~= nil then line = line:sub(#line - fixed_length) end
+        if fixed_length ~= nil then
+            local first_idx = #line - fixed_length -- include additional char for wordtrig
+            if first_idx < 0 then
+                return nil
+            elseif first_idx > 0 then
+                if string.byte(line, first_idx) > 127 then return nil end
+            end
+            line = line:sub(first_idx)
+        end
         local whole, captures = base_engine(line, trig)
         if whole == nil then return nil end
 
