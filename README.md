@@ -72,10 +72,10 @@ To render the flashcard in your document as well add some code like this
 
 
 ## Installation
-Install the plugin in Neovim and set the `typstarRoot` config or alternatively clone typstar into `~/typstar`.
+Install the plugin in Neovim and run the plugin setup.
 ```lua
-require('typstar').setup({
-  typstarRoot = '/path/to/typstar/repo' -- depending on your nvim plugin system
+require('typstar').setup({ -- depending on your neovim plugin system
+   -- your typstar config goes here
 })
 ```
 
@@ -89,6 +89,7 @@ require('typstar').setup({
 1. Install [Obsidian](https://obsidian.md/) and create a vault in your typst note taking directory
 2. Install the [obsidian-excalidraw-plugin](https://github.com/zsviczian/obsidian-excalidraw-plugin) and enable `Auto-export SVG` (in plugin settings at `Embedding Excalidraw into your Notes and Exporting > Export Settings > Auto-export Settings`)
 3. Have the `xdg-open` command working or set a different command at `uriOpenCommand` in the [config](#configuration)
+4. If you encounter issues try cloning the repo into `~/typstar` or setting the `typstarRoot` config accordingly, feel free to open an issue
 
 ### Anki
 0. Typst version `0.12.0` or higher is required
