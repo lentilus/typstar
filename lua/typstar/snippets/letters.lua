@@ -76,7 +76,6 @@ trigger_index_post = table.concat(common_indices, '|')
 local get_greek = function(_, snippet) return s(nil, t(greek_letters_map[snippet.captures[1]])) end
 
 local get_index = function(_, snippet, _, idx1, idx2)
-    print(idx1, idx2)
     local letter, index = snippet.captures[idx1], snippet.captures[idx2]
     local trigger = letter .. index
     if index_conflicts_set[trigger] then return s(nil, t(trigger)) end
@@ -95,7 +94,7 @@ local get_series = function(_, snippet)
         end
         result = table.concat(res, '')
     else
-        result = string.format('%s_1, %s_2, ... %s_%s', letter, letter, letter, target)
+        result = string.format('%s_1, %s_2, ..., %s_%s', letter, letter, letter, target)
     end
     return s(nil, t(result))
 end
