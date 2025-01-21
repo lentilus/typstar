@@ -79,6 +79,35 @@ require('typstar').setup({ -- depending on your neovim plugin system
 })
 ```
 
+### In a Nix Flake
+You can add typstart to your `nix-flake` like so:
+```nix
+# `flake.nix`
+inputs = {
+  # ... other inputs
+  typstar = {
+    url = "github:arne314/typstar";
+    flake = false;
+  };
+}
+```
+Now you can use `typstar` in any package-set
+```nix
+with pkgs [
+  #
+  # other packges ...
+  #
+  (pkgs.vimUtils.buildVimPlugin {
+     name = "typstar";
+     src = inputs.typstar; 
+     buildInputs = [
+        vimPlugins.luasnip 
+        vimPlugins.nvim-treesitter-parsers.typst
+     ];
+  })
+]
+```
+
 ### Snippets
 1. Install [LuaSnip](https://github.com/L3MON4D3/LuaSnip/), set `enable_autosnippets = true` and set a visual mode selection key (e.g. `store_selection_keys = '<Tab>'`) in the configuration
 2. Install [jsregexp](https://github.com/kmarius/jsregexp) as described [here](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#transformations) (You will see a warning on startup if jsregexp isn't installed properly)
