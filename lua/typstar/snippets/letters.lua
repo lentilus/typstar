@@ -1,5 +1,6 @@
 local ls = require('luasnip')
 local d = ls.dynamic_node
+local i = ls.insert_node
 local s = ls.snippet_node
 local t = ls.text_node
 local helper = require('typstar.autosnippets')
@@ -130,4 +131,7 @@ return {
     -- series of numbered letters
     snip('(' .. trigger_index_pre .. ') ot ', '<>_1, <>_2, ... ', { cap(1), cap(1) }, math), -- a_1, a_2, ...
     snip('(' .. trigger_index_pre .. ') ot(\\w+) ', '<> ', { d(1, get_series) }, math), -- a_1, a_2, ... a_j or a_1, a_2, a_2, a_3, a_4, a_5
+
+    -- misc
+    snip('(' .. trigger_index_pre .. ')bl', 'B_<> (<>)', { cap(1), i(1, 'x_0') }, math),
 }

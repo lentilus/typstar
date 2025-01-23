@@ -42,6 +42,15 @@ return {
     snip('xx', 'times ', {}, math, 900),
     snip('oxx', 'times.circle ', {}, math),
     snip('bxx', 'times.square ', {}, math),
+    snip('ff', '(<>) / (<>) <>', { i(1, 'a'), i(2, 'b'), i(3) }, math),
+
+    -- exponents
+    snip('iv', '^(-1) ', {}, math, 500, false),
+    snip('sr', '^2 ', {}, math, 500, false),
+    snip('cb', '^3 ', {}, math, 500, false),
+    snip('jj', '_(<>) ', { i(1, 'n') }, math, 500, false),
+    snip('kk', '^(<>) ', { i(1, 'n') }, math, 500, false),
+    snip('ep', 'exp(<>) ', { i(1, '1') }, math),
 
     -- sets
     -- 'st' to '{<>} in ./visual.lua
@@ -63,14 +72,8 @@ return {
     snip('mt', '|->> ', {}, math),
     snip('Oo', 'compose ', {}, math),
     snip('iso', 'tilde.equiv ', {}, math),
-    snip('ep', 'exp(<>) ', { i(1, '1') }, math),
     snip('cc', 'cases(\n\t<>\n)\\', { i(1, '1') }, math),
     snip('(K|M|N|Q|R|S|Z)([\\dn]) ', '<><>^<> ', { cap(1), cap(1), cap(2) }, math),
-    snip('iv', '^(-1) ', {}, math, 500, false),
-    snip('sr', '^2 ', {}, math, 500, false),
-    snip('cb', '^3 ', {}, math, 500, false),
-    snip('jj', '_(<>) ', { i(1, 'n') }, math, 500, false),
-    snip('kk', '^(<>) ', { i(1, 'n') }, math, 500, false),
 
     snip('ddx', '(d <>)(d <>) ', { i(1, 'f'), i(2, 'x') }, math),
     snip('it', 'integral ', {}, math, 900),
