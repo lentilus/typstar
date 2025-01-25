@@ -38,7 +38,8 @@ local greek_letters_map = {
 local greek_keys = {}
 local greek_letters_set = {}
 local common_indices = { '\\d+', '[i-n]' }
-local index_conflicts = { 'in', 'ln', 'pi', 'xi' }
+-- buitins and caligraphic letters from github.com/lentilus/readable-typst
+local index_conflicts = { 'in', 'ln', 'pi', 'xi', 'Ii', 'Jj', 'Kk', 'Ll', 'Mm', 'Nn' }
 local index_conflicts_set = {}
 local trigger_greek = ''
 local trigger_index_pre = ''
