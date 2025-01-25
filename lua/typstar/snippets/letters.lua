@@ -15,6 +15,7 @@ local greek_letters_map = {
     ['c'] = 'chi',
     ['d'] = 'delta',
     ['e'] = 'epsilon',
+    ['f'] = 'phi',
     ['g'] = 'gamma',
     ['h'] = 'phi',
     ['i'] = 'iotta',
