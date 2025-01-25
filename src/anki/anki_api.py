@@ -8,7 +8,7 @@ import aiohttp
 from .flashcard import Flashcard
 
 
-async def _gather_exceptions(coroutines):
+async def gather_exceptions(coroutines):
     for result in await asyncio.gather(*coroutines, return_exceptions=True):
         if isinstance(result, Exception):
             raise result
@@ -28,7 +28,7 @@ class AnkiConnectApi:
         self.api_key = api_key
         self.semaphore = asyncio.Semaphore(2)  # increase in case Anki implements multithreading
 
-    async def push_flashcards(self, cards: Iterable[Flashcard]):
+    async def push_flashcards(self, cards: Iterable[Flashcard], reimport: bool):
         add: dict[str, List[Flashcard]] = defaultdict(list)
         update: dict[str, List[Flashcard]] = defaultdict(list)
         n_add: int = 0
@@ -41,6 +41,14 @@ class AnkiConnectApi:
             else:
                 update[card.deck].append(card)
                 n_update += 1
+        if reimport:
+            reimport_cards = await self._check_reimport(update)
+            print(f"Found {len(reimport_cards)} flashcards to reimport")
+            for card in reimport_cards:
+                update[card.deck].remove(card)
+                add[card.deck].append(card)
+                n_update -= 1
+                n_add += 1
 
         print(
             f"Pushing {n_add} new flashcards and {n_update} updated flashcards to Anki...",
@@ -48,7 +56,7 @@ class AnkiConnectApi:
         )
         await self._create_required_decks({*add.keys(), *update.keys()})
         await self._add_new_cards(add)
-        await _gather_exceptions(
+        await gather_exceptions(
             [
                 *self._update_cards_requests(add),
                 *self._update_cards_requests(update, True),
@@ -115,7 +123,18 @@ class AnkiConnectApi:
         for deck in required:
             if deck not in existing:
                 requests.append(self._request_api("createDeck", deck=deck))
-        await _gather_exceptions(requests)
+        await gather_exceptions(requests)
+
+    async def _check_reimport(self, cards_map: dict[str, List[Flashcard]]) -> List[Flashcard]:
+        cards = []
+        for cs in cards_map.values():
+            cards.extend(cs)
+        if not cards:
+            return []
+        existing = await self._request_api(
+            "findNotes", query=f"nid:{','.join([str(c.note_id) for c in cards])}"
+        )
+        return [c for c in cards if c.note_id not in existing]
 
     def _update_cards_requests(
         self, cards_map: dict[str, List[Flashcard]], update_deck: bool = True

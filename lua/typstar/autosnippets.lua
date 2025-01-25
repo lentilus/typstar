@@ -46,12 +46,13 @@ end
 
 function M.snip(trigger, expand, insert, condition, priority, wordTrig)
     priority = priority or 1000
+    if wordTrig == nil then wordTrig = true end
     return luasnip.snippet(
         {
             trig = trigger,
             trigEngine = M.engine,
-            trigEngineOpts = { condition = condition },
-            wordTrig = wordTrig,
+            trigEngineOpts = { condition = condition, wordTrig = wordTrig },
+            wordTrig = false,
             priority = priority,
             snippetType = 'autosnippet',
         },
@@ -68,6 +69,17 @@ end
 
 function M.engine(trigger, opts)
     local base_engine = lsengines.ecma(trigger, opts)
+
+    -- determine possibly fixed length of trigger
+    local fixed_length
+    if not trigger:match('[%+%*%?%]%[|]') then
+        fixed_length = #trigger
+            - utils.count_string(trigger, '\\')
+            - utils.count_string(trigger, '%(')
+            - utils.count_string(trigger, '%)')
+    end
+
+    -- cache preanalysis results
     local condition = function()
         local cached = lexical_result_cache[opts.condition]
         if cached ~= nil and cached[1] == last_keystroke_time then return cached[2] end
@@ -75,9 +87,28 @@ function M.engine(trigger, opts)
         lexical_result_cache[opts.condition] = { last_keystroke_time, result }
         return result
     end
+
+    -- matching
     return function(line, trig)
         if not M.snippets_toggle or not condition() then return nil end
-        return base_engine(line, trig)
+        if fixed_length ~= nil then
+            local first_idx = #line - fixed_length -- include additional char for wordtrig
+            if first_idx < 0 then
+                return nil
+            elseif first_idx > 0 then
+                if string.byte(line, first_idx) > 127 then return nil end
+            end
+            line = line:sub(first_idx)
+        end
+        local whole, captures = base_engine(line, trig)
+        if whole == nil then return nil end
+
+        -- custom word trig
+        local from = #line - #whole + 1
+        if opts.wordTrig and from ~= 1 and string.match(string.sub(line, from - 1, from - 1), '[%w.]') ~= nil then
+            return nil
+        end
+        return whole, captures
     end
 end
 

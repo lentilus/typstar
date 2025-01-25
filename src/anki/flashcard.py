@@ -78,7 +78,7 @@ class Flashcard:
         self.back_node = back
         self.note_id_node = note_id
 
-    def update_id(self, value):
+    def update_id(self, value: int):
         if self.note_id != value:
             self.note_id = value
             self.id_updated = True
