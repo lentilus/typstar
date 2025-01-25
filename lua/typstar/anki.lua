@@ -22,8 +22,14 @@ end
 
 function M.scan() run_typstar_anki('') end
 
+function M.scan_reimport() run_typstar_anki('--reimport') end
+
 function M.scan_force() run_typstar_anki('--force-scan ' .. vim.fn.getcwd()) end
 
+function M.scan_force_reimport() run_typstar_anki('--reimport --force-scan ' .. vim.fn.getcwd()) end
+
 function M.scan_force_current() run_typstar_anki('--force-scan ' .. vim.fn.expand('%:p')) end
+
+function M.scan_force_current_reimport() run_typstar_anki('--reimport --force-scan ' .. vim.fn.expand('%:p')) end
 
 return M

@@ -66,6 +66,9 @@ To render the flashcard in your document as well add some code like this
 - Use `:TypstarAnkiScan` to scan the current nvim working directory and compile all flashcards in its context, unchanged files will be ignored
 - Use `:TypstarAnkiForce` to force compilation of all flashcards in the current working directory even if the files haven't changed since the last scan (e.g. on preamble change)
 - Use `:TypstarAnkiForceCurrent` to force compilation of all flashcards in the file currently edited
+- Use `:TypstarAnkiReimport` to also add flashcards that have already been asigned an id but are not currently
+present in Anki
+- Use `:TypstarAnkiForceReimport` and `:TypstarAnkiForceCurrentReimport` to combine features accordingly
 
 #### Standalone
 - Run `typstar-anki --help` to show the available options
