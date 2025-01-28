@@ -24,7 +24,7 @@ Math snippets:
 - Alphanumeric characters: `:<char>` &#8594; `$<char>$ ` in markup (e.g. `:X` &#8594; `$X$ `, `:5` &#8594; `$5$ `)
 - Greek letters: `;<latin>` &#8594; `<greek>` in math and `$<greek>$ ` in markup (e.g. `;a` &#8594; `alpha`/`$alpha$ `)
 - Common indices (numbers and letters `i-n`): `<letter><index> ` &#8594; `<letter>_<index> ` in math and `$<letter>$<index> ` &#8594; `$<letter>_<index>$ ` in markup (e.g `A314 ` &#8594; `A_314 `, `$alpha$n ` &#8594; `$alpha_n$ `)
-- Series of numbered letters: `<letter> ot<optional last index> ` &#8594; `<letter>_1, <letter>_2, ... ` (e.g. `a ot ` &#8594; `a_1, a_2, ... `, `a ot4 ` &#8594; `a_1, a_2, a_3, a_4 `, `alpha ot k ` &#8594; `alpha_1, alpha_2, ..., alpha_k `)
+- Series of numbered letters: `<letter> ot<optional last index> ` &#8594; `<letter>_1, <letter>_2, ... ` (e.g. `a ot ` &#8594; `a_1, a_2, ... `, `a ot4 ` &#8594; `a_1, a_2, a_3, a_4 `, `alpha otk ` &#8594; `alpha_1, alpha_2, ..., alpha_k `)
 - Wrapping of any mathematical expression (see [operations](./lua/typstar/snippets/visual.lua), works nested, multiline and in visual mode via the [selection key](#installation)): `<expression><operation>` &#8594; `<operation>(<expression>)` (e.g. `(a^2+b^2)rt` &#8594; `sqrt(a^2+b^2)`, `lambdatd` &#8594; `tilde(lambda)`, `(1+1)sQ` &#8594; `[1+1]`, `(1+1)sq` &#8594; `[(1+1)]`)
 - Matrices: `<size>ma` and `<size>lma` (e.g. `23ma` &#8594; 2x3 matrix)
 
@@ -75,40 +75,11 @@ present in Anki
 
 
 ## Installation
-Install the plugin in Neovim and run the plugin setup.
+Install the plugin in Neovim (see [Nix instructions](#in-a-nix-flake-optional)) and run the plugin setup.
 ```lua
 require('typstar').setup({ -- depending on your neovim plugin system
    -- your typstar config goes here
 })
-```
-
-### In a Nix Flake
-You can add typstart to your `nix-flake` like so:
-```nix
-# `flake.nix`
-inputs = {
-  # ... other inputs
-  typstar = {
-    url = "github:arne314/typstar";
-    flake = false;
-  };
-}
-```
-Now you can use `typstar` in any package-set
-```nix
-with pkgs [
-  #
-  # other packges ...
-  #
-  (pkgs.vimUtils.buildVimPlugin {
-     name = "typstar";
-     src = inputs.typstar; 
-     buildInputs = [
-        vimPlugins.luasnip 
-        vimPlugins.nvim-treesitter-parsers.typst
-     ];
-  })
-]
 ```
 
 ### Snippets
@@ -129,6 +100,33 @@ with pkgs [
 2. Install [Anki-Connect](https://ankiweb.net/shared/info/2055492159) and make sure `http://localhost` is added to `webCorsOriginList` in the Add-on config (should be added by default)
 3. Install the typstar python package (I recommend using [pipx](https://github.com/pypa/pipx) via `pipx install git+https://github.com/arne314/typstar`, you will need to have python build tools and clang installed) \[Note: this may take a while\]
 4. Make sure the `typstar-anki` command is available in your `PATH` or modify the `typstarAnkiCmd` option in the [config](#configuration)
+
+### In a Nix Flake (optional)
+You can add typstar to your `nix-flake` like so
+```nix
+# `flake.nix`
+inputs = {
+  # ... other inputs
+  typstar = {
+    url = "github:arne314/typstar";
+    flake = false;
+  };
+}
+```
+Now you can use `typstar` in any package-set
+```nix
+with pkgs; [
+  # ... other packges
+  (pkgs.vimUtils.buildVimPlugin {
+     name = "typstar";
+     src = inputs.typstar; 
+     buildInputs = [
+        vimPlugins.luasnip 
+        vimPlugins.nvim-treesitter-parsers.typst
+     ];
+  })
+]
+```
 
 ## Configuration
 Configuration options can be intuitively derived from the table [here](./lua/typstar/config.lua).
