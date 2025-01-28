@@ -25,6 +25,7 @@ local default_config = {
             'markup',
             'visual',
         },
+        exclude = {}, -- list of triggers to exclude
     },
 }
 

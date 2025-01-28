@@ -4,6 +4,7 @@ local i = ls.insert_node
 local s = ls.snippet_node
 local t = ls.text_node
 local helper = require('typstar.autosnippets')
+local utils = require('typstar.utils')
 local snip = helper.snip
 local cap = helper.cap
 local math = helper.in_math
@@ -62,14 +63,8 @@ for latin, greek in pairs(greek_letters_map) do
     table.insert(greek_keys, latin:upper())
 end
 
-local generate_bool_set = function(arr, target)
-    for _, val in ipairs(arr) do
-        target[val] = true
-    end
-end
-
-generate_bool_set(index_conflicts, index_conflicts_set)
-generate_bool_set(punctuation_prepend_space, punctuation_prepend_space_set)
+utils.generate_bool_set(index_conflicts, index_conflicts_set)
+utils.generate_bool_set(punctuation_prepend_space, punctuation_prepend_space_set)
 
 greek_letters_map = greek_full
 trigger_greek = table.concat(greek_keys, '|')

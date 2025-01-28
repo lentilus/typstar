@@ -28,7 +28,7 @@ Math snippets:
 - Wrapping of any mathematical expression (see [operations](./lua/typstar/snippets/visual.lua), works nested, multiline and in visual mode via the [selection key](#installation)): `<expression><operation>` &#8594; `<operation>(<expression>)` (e.g. `(a^2+b^2)rt` &#8594; `sqrt(a^2+b^2)`, `lambdatd` &#8594; `tilde(lambda)`, `(1+1)sQ` &#8594; `[1+1]`, `(1+1)sq` &#8594; `[(1+1)]`)
 - Matrices: `<size>ma` and `<size>lma` (e.g. `23ma` &#8594; 2x3 matrix)
 
-Note that you can enable and disable collections of snippets in the [config](#configuration).
+Note that you can enable and disable single and modules of snippets in the [config](#configuration).
 
 ### Excalidraw
 - Use `:TypstarInsertExcalidraw` to create a new drawing using the configured template, insert a figure displaying it and open it in Obsidian.

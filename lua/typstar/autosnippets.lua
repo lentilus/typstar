@@ -6,14 +6,17 @@ local fmta = require('luasnip.extras.fmt').fmta
 local lsengines = require('luasnip.nodes.util.trig_engines')
 local ts = vim.treesitter
 
+local exclude_triggers_set = {}
 local last_keystroke_time = nil
-vim.api.nvim_create_autocmd('TextChangedI', {
-    callback = function() last_keystroke_time = vim.loop.now() end,
-})
 local lexical_result_cache = {}
 local ts_markup_query = ts.query.parse('typst', '(text) @markup')
 local ts_math_query = ts.query.parse('typst', '(math) @math')
 local ts_string_query = ts.query.parse('typst', '(string) @string')
+
+utils.generate_bool_set(cfg.exclude, exclude_triggers_set)
+vim.api.nvim_create_autocmd('TextChangedI', {
+    callback = function() last_keystroke_time = vim.loop.now() end,
+})
 
 M.in_math = function()
     local cursor = utils.get_cursor_pos()
@@ -121,7 +124,16 @@ function M.setup()
     if cfg.enable then
         local autosnippets = {}
         for _, file in ipairs(cfg.modules) do
-            vim.list_extend(autosnippets, require(('typstar.snippets.%s'):format(file)))
+            for _, sn in ipairs(require(('typstar.snippets.%s'):format(file))) do
+                local exclude
+                local is_start = sn.trigger:match('^%^%(\\s%*%)')
+                if is_start then
+                    exclude = exclude_triggers_set[sn.trigger:sub(7)]
+                else
+                    exclude = exclude_triggers_set[sn.trigger]
+                end
+                if not exclude then table.insert(autosnippets, sn) end
+            end
         end
         luasnip.add_snippets('typst', autosnippets)
         local jsregexp_ok, _ = pcall(require, 'luasnip-jsregexp')

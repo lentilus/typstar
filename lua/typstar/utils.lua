@@ -61,6 +61,12 @@ function M.urlencode(url)
     return url
 end
 
+function M.generate_bool_set(arr, target)
+    for _, val in ipairs(arr) do
+        target[val] = true
+    end
+end
+
 function M.get_treesitter_root(bufnr) return ts.get_parser(bufnr):parse()[1]:root() end
 
 function M.treesitter_match_start_end(match)
