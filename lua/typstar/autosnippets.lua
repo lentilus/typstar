@@ -47,14 +47,14 @@ function M.ri(insert_node_id)
     return luasnip.function_node(function(args) return args[1][1] end, insert_node_id)
 end
 
-function M.snip(trigger, expand, insert, condition, priority, wordTrig)
+function M.snip(trigger, expand, insert, condition, priority, wordTrig, maxTrigLength)
     priority = priority or 1000
     if wordTrig == nil then wordTrig = true end
     return luasnip.snippet(
         {
             trig = trigger,
             trigEngine = M.engine,
-            trigEngineOpts = { condition = condition, wordTrig = wordTrig },
+            trigEngineOpts = { condition = condition, wordTrig = wordTrig, maxTrigLength = maxTrigLength },
             wordTrig = false,
             priority = priority,
             snippetType = 'autosnippet',
@@ -70,16 +70,40 @@ function M.start_snip(trigger, expand, insert, condition, priority)
     return M.snip('^(\\s*)' .. trigger, '<>' .. expand, { M.cap(1), unpack(insert) }, condition, priority)
 end
 
+local alts_regex = '[\\[\\(](.*|.*)[\\)\\]]'
+
 function M.engine(trigger, opts)
     local base_engine = lsengines.ecma(trigger, opts)
 
-    -- determine possibly fixed length of trigger
-    local fixed_length
-    if not trigger:match('[%+%*%?%]%[|]') then
-        fixed_length = #trigger
+    -- determine possibly max/fixed length of trigger
+    local max_length = opts.maxTrigLength
+    local is_fixed_length = false
+    if alts_regex ~= '' and not trigger:match('[%+%*]') then
+        max_length = #trigger
             - utils.count_string(trigger, '\\')
             - utils.count_string(trigger, '%(')
             - utils.count_string(trigger, '%)')
+            - utils.count_string(trigger, '%?')
+        is_fixed_length = not trigger:match('[%+%*%?%[%]|]')
+
+        local alts_match = alts_regex:match(trigger) -- find longest trigger in [...|...]
+        if alts_match then
+            for _, alts in ipairs(alts_match) do
+                local max_alt_length = 1
+                for alt in alts:gmatch('([^|]+)') do
+                    local len
+                    if alt:match('%[.*-.*%]') then -- [A-Za-z0-9] and similar
+                        len = 2
+                    else
+                        len = #alt
+                    end
+                    max_alt_length = math.max(max_alt_length, len)
+                end
+                max_length = max_length - (#alts - max_alt_length)
+            end
+        else -- [^...] and similar
+            max_length = max_length - utils.count_string(trigger, '%[') - utils.count_string(trigger, '%]')
+        end
     end
 
     -- cache preanalysis results
@@ -94,11 +118,16 @@ function M.engine(trigger, opts)
     -- matching
     return function(line, trig)
         if not M.snippets_toggle or not condition() then return nil end
-        if fixed_length ~= nil then
-            local first_idx = #line - fixed_length -- include additional char for wordtrig
+        if max_length ~= nil then
+            local first_idx = #line - max_length -- include additional char for wordtrig
             if first_idx < 0 then
-                return nil
-            elseif first_idx > 0 then
+                if is_fixed_length then
+                    return nil
+                else
+                    first_idx = 1
+                end
+            end
+            if first_idx > 0 then
                 if string.byte(line, first_idx) > 127 then return nil end
             end
             line = line:sub(first_idx)
@@ -122,6 +151,16 @@ end
 
 function M.setup()
     if cfg.enable then
+        local jsregexp_ok, jsregexp = pcall(require, 'luasnip-jsregexp')
+        if not jsregexp_ok then
+            jsregexp_ok, jsregexp = pcall(require, 'jsregexp')
+        end
+        if jsregexp_ok then
+            alts_regex = jsregexp.compile_safe(alts_regex)
+        else
+            alts_regex = ''
+            vim.notify("WARNING: Most snippets won't work as jsregexp is not installed", vim.log.levels.WARN)
+        end
         local autosnippets = {}
         for _, file in ipairs(cfg.modules) do
             for _, sn in ipairs(require(('typstar.snippets.%s'):format(file))) do
@@ -136,13 +175,6 @@ function M.setup()
             end
         end
         luasnip.add_snippets('typst', autosnippets)
-        local jsregexp_ok, _ = pcall(require, 'luasnip-jsregexp')
-        if not jsregexp_ok then
-            jsregexp_ok, _ = pcall(require, 'jsregexp')
-        end
-        if not jsregexp_ok then
-            vim.notify("WARNING: Most snippets won't work as jsregexp is not installed", vim.log.levels.WARN)
-        end
     end
 end
 

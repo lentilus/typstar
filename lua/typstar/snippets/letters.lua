@@ -19,7 +19,7 @@ local greek_letters_map = {
     ['f'] = 'phi',
     ['g'] = 'gamma',
     ['h'] = 'eta',
-    ['i'] = 'iotta',
+    ['i'] = 'iota',
     ['j'] = 'theta',
     ['k'] = 'kappa',
     ['l'] = 'lambda',
@@ -115,19 +115,23 @@ return {
         '$<>$<>',
         { d(1, get_index, {}, { user_args = { 1, 2 } }), d(2, prepend_space, {}, { user_args = { 3 } }) },
         markup,
-        500
+        500,
+        true,
+        13
     ),
     snip(
         '(' .. trigger_index_pre .. ')' .. '(' .. trigger_index_post .. ')([^\\w])',
         '<><>',
         { d(1, get_index, {}, { user_args = { 1, 2 } }), d(2, prepend_space, {}, { user_args = { 3 } }) },
         math,
-        200
+        200,
+        true,
+        10 -- epsilon123
     ),
 
     -- series of numbered letters
     snip('(' .. trigger_index_pre .. ') ot ', '<>_1, <>_2, ... ', { cap(1), cap(1) }, math), -- a_1, a_2, ...
-    snip('(' .. trigger_index_pre .. ') ot(\\w+) ', '<> ', { d(1, get_series) }, math), -- a_1, a_2, ... a_j or a_1, a_2, a_2, a_3, a_4, a_5
+    snip('(' .. trigger_index_pre .. ') ot(\\w+) ', '<> ', { d(1, get_series) }, math, 1000, true, 13), -- a_1, a_2, ... a_j or a_1, a_2, a_2, a_3, a_4, a_5
 
     -- misc
     snip('(' .. trigger_index_pre .. ')bl', 'B_<> (<>)', { cap(1), i(1, 'x_0') }, math),
