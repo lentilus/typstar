@@ -73,10 +73,10 @@ trigger_index_post = table.concat(common_indices, '|')
 
 local get_greek = function(_, snippet) return s(nil, t(greek_letters_map[snippet.captures[1]])) end
 
-local get_index = function(_, snippet, _, idx1, idx2)
+local get_index = function(_, snippet, _, idx1, idx2, check_conflict)
     local letter, index = snippet.captures[idx1], snippet.captures[idx2]
     local trigger = letter .. index
-    if index_conflicts_set[trigger] then return s(nil, t(trigger)) end
+    if check_conflict and index_conflicts_set[trigger] then return s(nil, t(trigger)) end
     return s(nil, t(letter .. '_' .. index))
 end
 
@@ -113,7 +113,7 @@ return {
     snip(
         '\\$(' .. trigger_index_pre .. ')\\$' .. ' (' .. trigger_index_post .. ')([^\\w])',
         '$<>$<>',
-        { d(1, get_index, {}, { user_args = { 1, 2 } }), d(2, prepend_space, {}, { user_args = { 3 } }) },
+        { d(1, get_index, {}, { user_args = { 1, 2, false } }), d(2, prepend_space, {}, { user_args = { 3 } }) },
         markup,
         500,
         true,
@@ -122,7 +122,7 @@ return {
     snip(
         '(' .. trigger_index_pre .. ')' .. '(' .. trigger_index_post .. ')([^\\w])',
         '<><>',
-        { d(1, get_index, {}, { user_args = { 1, 2 } }), d(2, prepend_space, {}, { user_args = { 3 } }) },
+        { d(1, get_index, {}, { user_args = { 1, 2, true } }), d(2, prepend_space, {}, { user_args = { 3 } }) },
         math,
         200,
         true,
