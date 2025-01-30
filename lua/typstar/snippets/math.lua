@@ -75,7 +75,8 @@ return {
     snip('cc', 'cases(\n\t<>\n)\\', { i(1, '1') }, math),
     snip('(K|M|N|Q|R|S|Z)([\\dn]) ', '<><>^<> ', { cap(1), cap(1), cap(2) }, math),
 
-    snip('ddx', '(d <>)(d <>) ', { i(1, 'f'), i(2, 'x') }, math),
+    snip('dx', 'd / (d <>) ', { i(1, 'x') }, math, 900),
+    snip('ddx', '(d <>) / (d <>) ', { i(1, 'f'), i(2, 'x') }, math),
     snip('it', 'integral ', {}, math, 900),
     snip('int', 'integral_(<>)^(<>) ', { i(1, 'a'), i(2, 'b') }, math),
     snip('oit', 'integral_Omega ', {}, math),
