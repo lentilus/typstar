@@ -46,6 +46,11 @@ function M.run_shell_command(cmd, show_output)
     end
 end
 
+function M.count_string(str, tocount)
+    local _, count = str:gsub(tocount, '')
+    return count
+end
+
 function M.char_to_hex(c) return string.format('%%%02X', string.byte(c)) end
 
 function M.urlencode(url)
@@ -54,6 +59,12 @@ function M.urlencode(url)
     url = string.gsub(url, '([^%w _%%%-%.~])', M.char_to_hex)
     url = string.gsub(url, ' ', '%%20')
     return url
+end
+
+function M.generate_bool_set(arr, target)
+    for _, val in ipairs(arr) do
+        target[val] = true
+    end
 end
 
 function M.get_treesitter_root(bufnr) return ts.get_parser(bufnr):parse()[1]:root() end

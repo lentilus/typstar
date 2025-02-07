@@ -1,7 +1,7 @@
 local M = {}
 
 local default_config = {
-    typstarRoot = '~/typstar',
+    typstarRoot = nil,
     anki = {
         typstarAnkiCmd = 'typstar-anki',
         typstCmd = 'typst',
@@ -25,11 +25,15 @@ local default_config = {
             'markup',
             'visual',
         },
+        exclude = {}, -- list of triggers to exclude
     },
 }
 
 function M.merge_config(args)
     M.config = vim.tbl_deep_extend('force', default_config, args or {})
+    M.config.typstarRoot = M.config.typstarRoot
+        or debug.getinfo(1).source:match('^@(.*)/lua/typstar/config%.lua$')
+        or '~/typstar'
     M.config.excalidraw.templatePath = M.config.excalidraw.templatePath
         or {
             ['%.excalidraw%.md$'] = M.config.typstarRoot .. '/res/excalidraw_template.excalidraw.md',
