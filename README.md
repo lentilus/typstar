@@ -28,7 +28,7 @@ Math snippets:
 - Wrapping of any mathematical expression (see [operations](./lua/typstar/snippets/visual.lua), works nested, multiline and in visual mode via the [selection key](#installation)): `<expression><operation>` &#8594; `<operation>(<expression>)` (e.g. `(a^2+b^2)rt` &#8594; `sqrt(a^2+b^2)`, `lambdatd` &#8594; `tilde(lambda)`, `(1+1)sQ` &#8594; `[1+1]`, `(1+1)sq` &#8594; `[(1+1)]`)
 - Matrices: `<size>ma` and `<size>lma` (e.g. `23ma` &#8594; 2x3 matrix)
 
-Note that you can enable and disable single and modules of snippets in the [config](#configuration).
+Note that you can [customize](#custom-snippets) (enable, disable and modify) every snippet.
 
 ### Excalidraw
 - Use `:TypstarInsertExcalidraw` to create a new drawing using the configured template, insert a figure displaying it and open it in Obsidian.
@@ -130,4 +130,41 @@ with pkgs; [
 
 ## Configuration
 Configuration options can be intuitively derived from the table [here](./lua/typstar/config.lua).
+
+### Custom snippets
+The [config](#configuration) allows you to
+- disable all snippets via `snippets.enable = false`
+- only include specific modules from the snippets folder via e.g. `snippets.modules = { 'letters' }`
+- exclude specific triggers via e.g. `snippets.exclude = { 'dx', 'ddx' }`
+
+For further customization you can make use of the provided wrappers from within your [LuaSnip](https://github.com/L3MON4D3/LuaSnip/) config.
+Let's say you prefer the short `=>` arrow over the long `==>` one and would like to change the `ip` trigger to `imp`.
+Your `typstar` config could look like
+```lua
+require('typstar').setup({
+	snippets = {
+		exclude = { 'ip' },
+	},
+})
+```
+while your LuaSnip `typst.lua` could look like this (`<` and `>` require escaping as `<>` [introduces a new node](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#fmt))
+```lua
+local tp = require('typstar.autosnippets')
+local snip = tp.snip
+local math = tp.in_math
+local markup = tp.in_markup
+
+return {
+    -- add a new snippet (the old one is excluded via the config)
+    snip('imp', '=>> ', {}, math),
+
+    -- override existing triggers by setting a high priority
+    snip('ib', '<<= ', {}, math, 2000),
+    snip('iff', '<<=>> ', {}, math, 2000),
+
+    -- setup markup snippets accordingly
+    snip('IMP', '$=>>$ ', {}, markup, 2000),
+    snip('IFF', '$<<=>>$ ', {}, markup, 2000),
+}
+```
 
