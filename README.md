@@ -142,9 +142,9 @@ Let's say you prefer the short `=>` arrow over the long `==>` one and would like
 Your `typstar` config could look like
 ```lua
 require('typstar').setup({
-	snippets = {
-		exclude = { 'ip' },
-	},
+    snippets = {
+        exclude = { 'ip' },
+    },
 })
 ```
 while your LuaSnip `typst.lua` could look like this (`<` and `>` require escaping as `<>` [introduces a new node](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#fmt))
