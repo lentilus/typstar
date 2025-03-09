@@ -9,20 +9,20 @@ class RecursiveConfigParser:
     targets: set[str]
     results: dict[str, dict[Path, str]]
 
-    def __init__(self, dir, targets):
+    def __init__(self, dir, targets, recursive=True):
         self.dir = dir
         self.targets = set(targets)
         self.results = defaultdict(dict)
-        self._parse_recursive()
+        self._parse_dirs(recursive)
 
-    def _parse_recursive(self):
+    def _parse_dirs(self, recursive=True):
         files = []
         for target in self.targets:
-            files.extend(
-                glob(
-                    f"{self.dir}/**/{target}", include_hidden=target.startswith("."), recursive=True
-                )
-            )
+            if recursive:
+                dir = f"{self.dir}/**/{target}"
+            else:
+                dir = f"{self.dir}/{target}"
+            files.extend(glob(dir, include_hidden=target.startswith("."), recursive=recursive))
         for file in files:
             file = Path(file)
             if file.name in self.targets:
