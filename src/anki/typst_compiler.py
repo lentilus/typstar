@@ -1,6 +1,8 @@
 import asyncio
 import os
 import random
+import re
+import sys
 from pathlib import Path
 from typing import List
 
@@ -18,7 +20,7 @@ default_preamble = """
 
 
 class TypstCompilationError(ValueError):
-    pass
+    regex = re.compile(r"\nerror: ")
 
 
 class TypstCompiler:
@@ -48,7 +50,11 @@ class TypstCompiler:
         stdout, stderr = await proc.communicate()
         os.remove(tmp_path)
         if stderr:
-            raise TypstCompilationError(bytes.decode(stderr, encoding="utf-8"))
+            err = bytes.decode(stderr, encoding="utf-8")
+            if TypstCompilationError.regex.search("\n" + err):
+                raise TypstCompilationError(err)
+            else:
+                print(f"Typst compilation warning:\n{err}", file=sys.stderr, flush=True)
         return stdout
 
     async def _compile_flashcard(self, card: Flashcard):

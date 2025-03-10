@@ -61,9 +61,9 @@ return {
     snip('sb', 'subset ', {}, math),
     snip('sep', 'supset.eq ', {}, math),
     snip('seb', 'subset.eq ', {}, math),
-    snip('nn', 'sect ', {}, math, 900),
+    snip('nn', 'inter ', {}, math, 900),
     snip('uu', 'union ', {}, math, 900),
-    snip('bnn', 'sect.big ', {}, math),
+    snip('bnn', 'inter.big ', {}, math),
     snip('buu', 'union.big ', {}, math),
     snip('swo', 'without ', {}, math),
 

@@ -126,7 +126,9 @@ class FlashcardParser:
             f"Parsing flashcards in {scan_dir if single_file is None else single_file} ...",
             flush=True,
         )
-        configs = RecursiveConfigParser(root_dir, {".anki", ".anki.typ"})
+        configs = RecursiveConfigParser(
+            root_dir, {".anki", ".anki.typ"}, recursive=single_file is None
+        )
 
         for file in glob(f"{scan_dir}/**/**.typ", recursive=True):
             file = Path(file)
