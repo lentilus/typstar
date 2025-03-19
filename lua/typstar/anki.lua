@@ -17,7 +17,10 @@ local function run_typstar_anki(args)
         anki_key,
         args
     )
-    utils.run_shell_command(cmd, true)
+    local handle_output = function(msg)
+        if string.match(msg, 'Done') then vim.cmd('checktime') end
+    end
+    utils.run_shell_command(cmd, true, handle_output)
 end
 
 function M.scan() run_typstar_anki('') end

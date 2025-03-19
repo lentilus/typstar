@@ -26,10 +26,12 @@ function M.insert_text_block(snip)
     vim.api.nvim_buf_set_lines(vim.api.nvim_get_current_buf(), line_num, line_num, false, lines)
 end
 
-function M.run_shell_command(cmd, show_output)
+function M.run_shell_command(cmd, show_output, extra_handler)
+    extra_handler = extra_handler or function(msg) end
     local handle_output = function(data, err)
         local msg = table.concat(data, '\n')
         if not string.match(msg, '^%s*$') then
+            extra_handler(msg)
             local level = err and vim.log.levels.ERROR or vim.log.levels.INFO
             vim.notify(msg, level)
         end
