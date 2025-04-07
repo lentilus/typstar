@@ -99,7 +99,7 @@ function M.engine(trigger, opts)
     -- determine possibly max/fixed length of trigger
     local max_length = opts.maxTrigLength
     local is_fixed_length = false
-    if max_length ~= nil and alts_regex ~= '' and not trigger:match('[%+%*]') then
+    if max_length == nil and alts_regex ~= '' and not trigger:match('[%+%*]') then
         max_length = #trigger
             - utils.count_string(trigger, '\\')
             - utils.count_string(trigger, '%(')
