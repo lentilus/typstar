@@ -9,8 +9,9 @@ local snip = helper.snip
 local start = helper.start_snip
 
 local ctheorems = {
-    { 'tem', 'theorem' },
+    { 'the', 'theorem' },
     { 'pro', 'proof' },
+    { 'prp', 'proposition' },
     { 'axi', 'axiom' },
     { 'cor', 'corollary' },
     { 'lem', 'lemma' },
