@@ -9,7 +9,7 @@ local snip = helper.snip
 local start = helper.start_snip
 
 local ctheorems = {
-    { 'the', 'theorem' },
+    { 'tem', 'theorem' },
     { 'pro', 'proof' },
     { 'prp', 'proposition' },
     { 'axi', 'axiom' },
