@@ -32,23 +32,34 @@ function M.cap(i)
     return luasnip.function_node(function(_, snip) return snip.captures[i] end)
 end
 
-function M.leading_white_spaces(i)
-    -- isolate whitespaces of captured group
-    return luasnip.function_node(function(_, snip)
-        local capture = snip.captures[i] or '' -- Return capture or empty string if nil
-        -- Extract only leading whitespace using pattern matching
-        local whitespace = capture:match('^%s*') or ''
-        return whitespace
-    end)
+local compute_leading_white_spaces = function(snip, i)
+    local capture = snip.captures[i] or ''
+    return capture:match('^%s*') or ''
 end
 
-function M.visual(idx, default)
+function M.leading_white_spaces(i)
+    return luasnip.function_node(function(_, snip) return compute_leading_white_spaces(snip, i) end)
+end
+
+function M.visual(idx, default, line_prefix, indent_capture_idx)
     default = default or ''
-    return luasnip.dynamic_node(idx, function(args, parent)
-        if #parent.snippet.env.LS_SELECT_RAW > 0 then
-            return luasnip.snippet_node(nil, luasnip.text_node(parent.snippet.env.LS_SELECT_RAW))
+    line_prefix = line_prefix or ''
+    return luasnip.dynamic_node(idx, function(_, snip)
+        local select_raw = snip.snippet.env.LS_SELECT_RAW
+        if #select_raw > 0 then
+            if line_prefix ~= '' then -- e.g. indentation
+                for i, s in ipairs(select_raw) do
+                    select_raw[i] = line_prefix .. s
+                end
+            end
+            return luasnip.snippet_node(nil, luasnip.text_node(select_raw))
         else -- If LS_SELECT_RAW is empty, return an insert node
-            return luasnip.snippet_node(nil, luasnip.insert_node(1, default))
+            local leading = ''
+            if indent_capture_idx ~= nil then leading = compute_leading_white_spaces(snip, indent_capture_idx) end
+            return luasnip.snippet_node(nil, {
+                luasnip.text_node(leading .. line_prefix),
+                luasnip.insert_node(1, default),
+            })
         end
     end)
 end
