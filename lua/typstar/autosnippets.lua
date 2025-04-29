@@ -73,6 +73,7 @@ function M.snip(trigger, expand, insert, condition, priority, trigOptions)
     trigOptions = vim.tbl_deep_extend('force', {
         maxTrigLength = nil,
         wordTrig = true,
+        blacklist = {},
     }, trigOptions or {})
     return luasnip.snippet(
         {
@@ -151,10 +152,11 @@ function M.engine(trigger, opts)
     end
 
     -- matching
-    return function(line, trig)
+    return function(line_full, trig)
         if not M.snippets_toggle or not condition() then return nil end
+        local first_idx = 1
         if max_length ~= nil then
-            local first_idx = #line - max_length -- include additional char for wordtrig
+            first_idx = #line_full - max_length -- include additional char for wordtrig
             if first_idx < 0 then
                 if is_fixed_length then
                     return nil
@@ -163,10 +165,10 @@ function M.engine(trigger, opts)
                 end
             end
             if first_idx > 0 then
-                if string.byte(line, first_idx) > 127 then return nil end
+                if string.byte(line_full, first_idx) > 127 then return nil end
             end
-            line = line:sub(first_idx)
         end
+        local line = line_full:sub(first_idx)
         local whole, captures = base_engine(line, trig)
         if whole == nil then return nil end
 
@@ -174,6 +176,11 @@ function M.engine(trigger, opts)
         local from = #line - #whole + 1
         if opts.wordTrig and from ~= 1 and string.match(string.sub(line, from - 1, from - 1), '[%w.]') ~= nil then
             return nil
+        end
+
+        -- blacklist
+        for _, w in ipairs(opts.blacklist) do
+            if line_full:sub(-#w) == w then return nil end
         end
         return whole, captures
     end

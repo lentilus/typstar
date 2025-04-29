@@ -45,7 +45,7 @@ return {
     snip('ff', '(<>) / (<>) <>', { i(1, 'a'), i(2, 'b'), i(3) }, math),
 
     -- exponents
-    snip('iv', '^(-1) ', {}, math, 500, { wordTrig = false }),
+    snip('iv', '^(-1) ', {}, math, 500, { wordTrig = false, blacklist = { 'equiv' } }),
     snip('sr', '^2 ', {}, math, 500, { wordTrig = false }),
     snip('cb', '^3 ', {}, math, 500, { wordTrig = false }),
     snip('jj', '_(<>) ', { i(1, 'n') }, math, 500, { wordTrig = false }),
