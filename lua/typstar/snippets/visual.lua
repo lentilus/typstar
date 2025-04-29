@@ -82,7 +82,10 @@ local smart_wrap = function(args, parent, old_state, expand)
 end
 
 for _, val in pairs(operations) do
-    table.insert(snippets, snip(val[1], '<>', { d(1, smart_wrap, {}, { user_args = { val } }) }, math, 1500, false))
+    table.insert(
+        snippets,
+        snip(val[1], '<>', { d(1, smart_wrap, {}, { user_args = { val } }) }, math, 1500, { wordTrig = false })
+    )
 end
 
 return {

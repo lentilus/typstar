@@ -116,8 +116,7 @@ return {
         { d(1, get_index, {}, { user_args = { 1, 2, false } }), d(2, prepend_space, {}, { user_args = { 3 } }) },
         markup,
         500,
-        true,
-        13
+        { maxTrigLength = 13 }
     ),
     snip(
         '(' .. trigger_index_pre .. ')' .. '(' .. trigger_index_post .. ')([^\\w])',
@@ -125,14 +124,13 @@ return {
         { d(1, get_index, {}, { user_args = { 1, 2, true } }), d(2, prepend_space, {}, { user_args = { 3 } }) },
         math,
         200,
-        true,
-        10 -- epsilon123
+        { maxTrigLength = 10 } -- epsilon123
     ),
 
     -- series of numbered letters
     snip('(' .. trigger_index_pre .. ') ot ', '<>_1, <>_2, ... ', { cap(1), cap(1) }, math), -- a_1, a_2, ...
-    snip('(' .. trigger_index_pre .. ') ot(\\w+) ', '<> ', { d(1, get_series) }, math, 1000, true, 13), -- a_1, a_2, ... a_j or a_1, a_2, a_2, a_3, a_4, a_5
+    snip('(' .. trigger_index_pre .. ') ot(\\w+) ', '<> ', { d(1, get_series) }, math, 1000, { maxTrigLength = 13 }), -- a_1, a_2, ... a_j or a_1, a_2, a_2, a_3, a_4, a_5
 
     -- misc
-    snip('(' .. trigger_index_pre .. ')bl', 'B_<> (<>) ', { cap(1), i(1, 'x_0') }, math, 100, true),
+    snip('(' .. trigger_index_pre .. ')bl', 'B_<> (<>) ', { cap(1), i(1, 'x_0') }, math, 100),
 }

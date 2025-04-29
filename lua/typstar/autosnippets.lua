@@ -68,14 +68,17 @@ function M.ri(insert_node_id)
     return luasnip.function_node(function(args) return args[1][1] end, insert_node_id)
 end
 
-function M.snip(trigger, expand, insert, condition, priority, wordTrig, maxTrigLength)
+function M.snip(trigger, expand, insert, condition, priority, trigOptions)
     priority = priority or 1000
-    if wordTrig == nil then wordTrig = true end
+    trigOptions = vim.tbl_deep_extend('force', {
+        maxTrigLength = nil,
+        wordTrig = true,
+    }, trigOptions or {})
     return luasnip.snippet(
         {
             trig = trigger,
             trigEngine = M.engine,
-            trigEngineOpts = { condition = condition, wordTrig = wordTrig, maxTrigLength = maxTrigLength },
+            trigEngineOpts = vim.tbl_deep_extend('keep', { condition = condition }, trigOptions),
             wordTrig = false,
             priority = priority,
             snippetType = 'autosnippet',
