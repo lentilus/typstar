@@ -91,18 +91,18 @@ function M.snip(trigger, expand, insert, condition, priority, trigOptions)
     )
 end
 
-function M.start_snip(trigger, expand, insert, condition, priority)
-    return M.snip('^(\\s*)' .. trigger, '<>' .. expand, { M.cap(1), unpack(insert) }, condition, priority)
+function M.start_snip(trigger, expand, insert, condition, priority, trigOptions)
+    return M.snip('^(\\s*)' .. trigger, '<>' .. expand, { M.cap(1), unpack(insert) }, condition, priority, trigOptions)
 end
 
-function M.start_snip_in_newl(trigger, expand, insert, condition, priority)
+function M.start_snip_in_newl(trigger, expand, insert, condition, priority, trigOptions)
     return M.snip(
         '([^\\s]\\s+)' .. trigger,
         '<>\n<>' .. expand,
         { M.cap(1), M.leading_white_spaces(1), unpack(insert) },
         condition,
         priority,
-        false
+        vim.tbl_deep_extend('keep', { wordTrig = false }, trigOptions or {})
     )
 end
 
