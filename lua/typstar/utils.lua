@@ -71,6 +71,21 @@ end
 
 function M.get_treesitter_root(bufnr) return ts.get_parser(bufnr):parse()[1]:root() end
 
+function M.treesitter_iter_matches(root, query, bufnr, start, stop)
+    local result = {}
+    local idx = 1
+    for _, matches, _ in query:iter_matches(root, bufnr, start, stop) do
+        if #matches then
+            if type(matches[1]) == 'userdata' then -- nvim version < 0.11
+                matches = { matches }
+            end
+            result[idx] = matches
+            idx = idx + 1
+        end
+    end
+    return result
+end
+
 function M.treesitter_match_start_end(match)
     local start_row, start_col, _, _ = match[1]:range()
     local _, _, end_row, end_col = match[#match]:range()
@@ -80,9 +95,10 @@ end
 function M.cursor_within_treesitter_query(query, match_tolerance, cursor)
     cursor = cursor or M.get_cursor_pos()
     local bufnr = vim.api.nvim_get_current_buf()
-    for _, match, _ in query:iter_matches(M.get_treesitter_root(bufnr), bufnr, cursor[1], cursor[1] + 1) do
-        if match then
-            local start_row, start_col, end_row, end_col = M.treesitter_match_start_end(match)
+    local root = M.get_treesitter_root(bufnr)
+    for _, match in ipairs(M.treesitter_iter_matches(root, query, bufnr, cursor[1], cursor[1] + 1)) do
+        for _, nodes in pairs(match) do
+            local start_row, start_col, end_row, end_col = M.treesitter_match_start_end(nodes)
             local matched = M.cursor_within_coords(cursor, start_row, end_row, start_col, end_col, match_tolerance)
             if matched then return true end
         end

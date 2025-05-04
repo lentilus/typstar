@@ -43,9 +43,9 @@ local ts_wrap_query = ts.query.parse('typst', '[(call) (ident) (letter) (number)
 local ts_wrapnobrackets_query = ts.query.parse('typst', '(group) @wrapnobrackets')
 
 local process_ts_query = function(bufnr, cursor, query, root, insert1, insert2, cut_offset)
-    for _, match, _ in query:iter_matches(root, bufnr, cursor[1], cursor[1] + 1) do
-        if match then
-            local start_row, start_col, end_row, end_col = utils.treesitter_match_start_end(match)
+    for _, match in ipairs(utils.treesitter_iter_matches(root, query, bufnr, cursor[1], cursor[1] + 1)) do
+        for _, nodes in pairs(match) do
+            local start_row, start_col, end_row, end_col = utils.treesitter_match_start_end(nodes)
             if end_row == cursor[1] and end_col == cursor[2] then
                 vim.schedule(function() -- to not interfere with luasnip
                     local cursor_offset = 0
