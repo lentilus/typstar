@@ -198,7 +198,7 @@ function M.setup()
             jsregexp_ok, jsregexp = pcall(require, 'jsregexp')
         end
         if jsregexp_ok then
-            alts_regex = jsregexp.compile_safe(alts_regex)
+            if type(alts_regex) == 'string' then alts_regex = jsregexp.compile_safe(alts_regex) end
         else
             alts_regex = ''
             vim.notify("WARNING: Most snippets won't work as jsregexp is not installed", vim.log.levels.WARN)
