@@ -1,3 +1,5 @@
+import html
+
 import tree_sitter
 
 from .file_handler import FileHandler
@@ -48,7 +50,9 @@ class Flashcard:
         return f"#flashcard({self.note_id})[{self.front if front else ''}][{self.back if not front else ''}]"
 
     def as_html(self, front: bool) -> str:
-        prefix = f"<p hidden>{self.front}: {self.back}{' ' * 10}</p>"  # indexable via anki search
+        safe_front = html.escape(self.front)
+        safe_back = html.escape(self.back)
+        prefix = f"<p hidden>{safe_front}: {safe_back}{' ' * 10}</p>"  # indexable via anki search
         image = f'<img src="{self.svg_filename(front)}" />'
         return prefix + image
 

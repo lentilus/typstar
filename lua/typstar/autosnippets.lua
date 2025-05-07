@@ -32,23 +32,34 @@ function M.cap(i)
     return luasnip.function_node(function(_, snip) return snip.captures[i] end)
 end
 
-function M.leading_white_spaces(i)
-    -- isolate whitespaces of captured group
-    return luasnip.function_node(function(_, snip)
-        local capture = snip.captures[i] or '' -- Return capture or empty string if nil
-        -- Extract only leading whitespace using pattern matching
-        local whitespace = capture:match('^%s*') or ''
-        return whitespace
-    end)
+local compute_leading_white_spaces = function(snip, i)
+    local capture = snip.captures[i] or ''
+    return capture:match('^%s*') or ''
 end
 
-function M.visual(idx, default)
+function M.leading_white_spaces(i)
+    return luasnip.function_node(function(_, snip) return compute_leading_white_spaces(snip, i) end)
+end
+
+function M.visual(idx, default, line_prefix, indent_capture_idx)
     default = default or ''
-    return luasnip.dynamic_node(idx, function(args, parent)
-        if #parent.snippet.env.LS_SELECT_RAW > 0 then
-            return luasnip.snippet_node(nil, luasnip.text_node(parent.snippet.env.LS_SELECT_RAW))
+    line_prefix = line_prefix or ''
+    return luasnip.dynamic_node(idx, function(_, snip)
+        local select_raw = snip.snippet.env.LS_SELECT_RAW
+        if #select_raw > 0 then
+            if line_prefix ~= '' then -- e.g. indentation
+                for i, s in ipairs(select_raw) do
+                    select_raw[i] = line_prefix .. s
+                end
+            end
+            return luasnip.snippet_node(nil, luasnip.text_node(select_raw))
         else -- If LS_SELECT_RAW is empty, return an insert node
-            return luasnip.snippet_node(nil, luasnip.insert_node(1, default))
+            local leading = ''
+            if indent_capture_idx ~= nil then leading = compute_leading_white_spaces(snip, indent_capture_idx) end
+            return luasnip.snippet_node(nil, {
+                luasnip.text_node(leading .. line_prefix),
+                luasnip.insert_node(1, default),
+            })
         end
     end)
 end
@@ -57,14 +68,18 @@ function M.ri(insert_node_id)
     return luasnip.function_node(function(args) return args[1][1] end, insert_node_id)
 end
 
-function M.snip(trigger, expand, insert, condition, priority, wordTrig, maxTrigLength)
+function M.snip(trigger, expand, insert, condition, priority, trigOptions)
     priority = priority or 1000
-    if wordTrig == nil then wordTrig = true end
+    trigOptions = vim.tbl_deep_extend('force', {
+        maxTrigLength = nil,
+        wordTrig = true,
+        blacklist = {},
+    }, trigOptions or {})
     return luasnip.snippet(
         {
             trig = trigger,
             trigEngine = M.engine,
-            trigEngineOpts = { condition = condition, wordTrig = wordTrig, maxTrigLength = maxTrigLength },
+            trigEngineOpts = vim.tbl_deep_extend('keep', { condition = condition }, trigOptions),
             wordTrig = false,
             priority = priority,
             snippetType = 'autosnippet',
@@ -76,18 +91,18 @@ function M.snip(trigger, expand, insert, condition, priority, wordTrig, maxTrigL
     )
 end
 
-function M.start_snip(trigger, expand, insert, condition, priority)
-    return M.snip('^(\\s*)' .. trigger, '<>' .. expand, { M.cap(1), unpack(insert) }, condition, priority)
+function M.start_snip(trigger, expand, insert, condition, priority, trigOptions)
+    return M.snip('^(\\s*)' .. trigger, '<>' .. expand, { M.cap(1), unpack(insert) }, condition, priority, trigOptions)
 end
 
-function M.start_snip_in_newl(trigger, expand, insert, condition, priority)
+function M.start_snip_in_newl(trigger, expand, insert, condition, priority, trigOptions)
     return M.snip(
         '([^\\s]\\s+)' .. trigger,
         '<>\n<>' .. expand,
         { M.cap(1), M.leading_white_spaces(1), unpack(insert) },
         condition,
         priority,
-        false
+        vim.tbl_deep_extend('keep', { wordTrig = false }, trigOptions or {})
     )
 end
 
@@ -99,7 +114,7 @@ function M.engine(trigger, opts)
     -- determine possibly max/fixed length of trigger
     local max_length = opts.maxTrigLength
     local is_fixed_length = false
-    if alts_regex ~= '' and not trigger:match('[%+%*]') then
+    if max_length == nil and alts_regex ~= '' and not trigger:match('[%+%*]') then
         max_length = #trigger
             - utils.count_string(trigger, '\\')
             - utils.count_string(trigger, '%(')
@@ -137,10 +152,11 @@ function M.engine(trigger, opts)
     end
 
     -- matching
-    return function(line, trig)
+    return function(line_full, trig)
         if not M.snippets_toggle or not condition() then return nil end
+        local first_idx = 1
         if max_length ~= nil then
-            local first_idx = #line - max_length -- include additional char for wordtrig
+            first_idx = #line_full - max_length -- include additional char for wordtrig
             if first_idx < 0 then
                 if is_fixed_length then
                     return nil
@@ -149,10 +165,10 @@ function M.engine(trigger, opts)
                 end
             end
             if first_idx > 0 then
-                if string.byte(line, first_idx) > 127 then return nil end
+                if string.byte(line_full, first_idx) > 127 then return nil end
             end
-            line = line:sub(first_idx)
         end
+        local line = line_full:sub(first_idx)
         local whole, captures = base_engine(line, trig)
         if whole == nil then return nil end
 
@@ -160,6 +176,11 @@ function M.engine(trigger, opts)
         local from = #line - #whole + 1
         if opts.wordTrig and from ~= 1 and string.match(string.sub(line, from - 1, from - 1), '[%w.]') ~= nil then
             return nil
+        end
+
+        -- blacklist
+        for _, w in ipairs(opts.blacklist) do
+            if line_full:sub(-#w) == w then return nil end
         end
         return whole, captures
     end
@@ -177,7 +198,7 @@ function M.setup()
             jsregexp_ok, jsregexp = pcall(require, 'jsregexp')
         end
         if jsregexp_ok then
-            alts_regex = jsregexp.compile_safe(alts_regex)
+            if type(alts_regex) == 'string' then alts_regex = jsregexp.compile_safe(alts_regex) end
         else
             alts_regex = ''
             vim.notify("WARNING: Most snippets won't work as jsregexp is not installed", vim.log.levels.WARN)

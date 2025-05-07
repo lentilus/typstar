@@ -21,6 +21,7 @@ local operations = { -- first boolean: existing brackets should be kept; second 
     { 'sQ', '[', ']', false, false }, -- replace with square brackets
     { 'BB', '', '', false, false }, -- remove brackets
     { 'ss', '"', '"', false, false },
+    { 'agl', 'lr(angle.l ', ' angle.r)', false, false },
     { 'abs', 'abs', '', true, true },
     { 'ul', 'underline', '', true, true },
     { 'ol', 'overline', '', true, true },
@@ -42,9 +43,9 @@ local ts_wrap_query = ts.query.parse('typst', '[(call) (ident) (letter) (number)
 local ts_wrapnobrackets_query = ts.query.parse('typst', '(group) @wrapnobrackets')
 
 local process_ts_query = function(bufnr, cursor, query, root, insert1, insert2, cut_offset)
-    for _, match, _ in query:iter_matches(root, bufnr, cursor[1], cursor[1] + 1) do
-        if match then
-            local start_row, start_col, end_row, end_col = utils.treesitter_match_start_end(match)
+    for _, match in ipairs(utils.treesitter_iter_matches(root, query, bufnr, cursor[1], cursor[1] + 1)) do
+        for _, nodes in pairs(match) do
+            local start_row, start_col, end_row, end_col = utils.treesitter_match_start_end(nodes)
             if end_row == cursor[1] and end_col == cursor[2] then
                 vim.schedule(function() -- to not interfere with luasnip
                     local cursor_offset = 0
@@ -81,7 +82,10 @@ local smart_wrap = function(args, parent, old_state, expand)
 end
 
 for _, val in pairs(operations) do
-    table.insert(snippets, snip(val[1], '<>', { d(1, smart_wrap, {}, { user_args = { val } }) }, math, 1500, false))
+    table.insert(
+        snippets,
+        snip(val[1], '<>', { d(1, smart_wrap, {}, { user_args = { val } }) }, math, 1500, { wordTrig = false })
+    )
 end
 
 return {
