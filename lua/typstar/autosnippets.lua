@@ -68,18 +68,22 @@ function M.ri(insert_node_id)
     return luasnip.function_node(function(args) return args[1][1] end, insert_node_id)
 end
 
-function M.snip(trigger, expand, insert, condition, priority, trigOptions)
+function M.snip(trigger, expand, insert, condition, priority, options)
     priority = priority or 1000
-    trigOptions = vim.tbl_deep_extend('force', {
+    options = vim.tbl_deep_extend('force', {
         maxTrigLength = nil,
         wordTrig = true,
         blacklist = {},
-    }, trigOptions or {})
+        prepend = nil,
+    }, options or {})
+    if options.prepend ~= nil then
+        expand, insert = M.blocktransform(expand, insert, options.prepend, true)
+    end
     return luasnip.snippet(
         {
             trig = trigger,
             trigEngine = M.engine,
-            trigEngineOpts = vim.tbl_deep_extend('keep', { condition = condition }, trigOptions),
+            trigEngineOpts = vim.tbl_deep_extend('keep', { condition = condition }, options),
             wordTrig = false,
             priority = priority,
             snippetType = 'autosnippet',
@@ -91,8 +95,8 @@ function M.snip(trigger, expand, insert, condition, priority, trigOptions)
     )
 end
 
-function M.start_snip(trigger, expand, insert, condition, priority, trigOptions)
-    return M.snip('^(\\s*)' .. trigger, '<>' .. expand, { M.cap(1), unpack(insert) }, condition, priority, trigOptions)
+function M.start_snip(trigger, expand, insert, condition, priority, options)
+    return M.snip('^(\\s*)' .. trigger, '<>' .. expand, { M.cap(1), unpack(insert) }, condition, priority, options)
 end
 
 -- Allows to pass expand string and insert table to either indent each line
@@ -151,41 +155,25 @@ function M.blocktransform(expand, insert, prepend, indent)
     return modified_expand, modified_insert
 end
 
-function M.snip_after_transform(trigger, expand, insert, condition, priority, prependlines, trigOptions)
-    local expand, insert = M.blocktransform(expand, insert, prependlines, true)
+function M.start_snip_in_newl(trigger, expand, insert, condition, priority, options)
     return M.snip(
-        trigger,
-        expand,
-        insert,
-        condition,
-        priority,
-        vim.tbl_deep_extend('keep', { wordTrig = false }, trigOptions or {})
-    )
-end
-
-function M.start_snip_in_newl(trigger, expand, insert, condition, priority, prepend, prependlines, trigOptions)
-    prepend = prepend or ''
-    return M.snip_after_transform(
         '([^\\s]\\s+)' .. trigger,
-        '<><>\n' .. expand,
-        { M.cap(1), prepend, unpack(insert) },
+        '<>\n' .. expand,
+        { M.cap(1), unpack(insert) },
         condition,
         priority,
-        prependlines,
-        trigOptions
+        options
     )
 end
 
-function M.bulletpoint_snip(trigger, expand, insert, condition, priority, prepend, prependlines, trigOptions)
-    prepend = prepend or ''
-    return M.snip_after_transform(
+function M.bulletpoint_snip(trigger, expand, insert, condition, priority, options)
+    return M.snip(
         '(^\\s*\\-\\s+.*\\s*)' .. trigger,
-        '<><>' .. expand,
-        { M.cap(1), prepend, unpack(insert) },
+        '<>' .. expand,
+        { M.cap(1), unpack(insert) },
         condition,
         priority,
-        prependlines,
-        trigOptions
+        options
     )
 end
 
