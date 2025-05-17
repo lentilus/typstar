@@ -93,9 +93,9 @@ function M.start_snip_in_newl(trigger, expand, insert, condition, priority, opti
     )
 end
 
-function M.bulletpoint_snip(trigger, expand, insert, condition, priority, options)
+function M.list_snip(trigger, expand, insert, condition, priority, options)
     return M.snip(
-        '(^\\s*\\-\\s+.*\\s*)' .. trigger,
+        '(^\\s*(-|\\+|\\d+\\.)\\s+.*\\s+)' .. trigger,
         '<>' .. expand,
         { M.cap(1), unpack(insert) },
         condition,
