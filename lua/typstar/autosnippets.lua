@@ -45,58 +45,39 @@ function M.start_snip(trigger, expand, insert, condition, priority, options)
     return M.snip('^(\\s*)' .. trigger, '<>' .. expand, { M.cap(1), unpack(insert) }, condition, priority, options)
 end
 
--- Allows to pass expand string and insert table to either indent each line
--- dynamically of the captured group indent, and or prepend to each line after the indent
--- For example prepend = '-- ' in lua.
--- indent: boolean to turn off indenting (option can't be set off right now)
--- prepend: prepend string
-function M.blocktransform(expand, insert, prepend, indent)
-    -- if idiomatic, skip
-    if indent ~= nil and not indent and not prepend then return expand, insert end
-
-    -- defaults / setup
-    if indent == nil then indent = true end
+-- transform the snippet expand by inserting indentation and/or a prefix after each newline
+function M.blocktransform(expand, insert, prepend, indent_capture_idx)
+    local indent = indent_capture_idx ~= nil
+    if not indent and not prepend then return expand, insert end
     prepend = prepend or ''
-    local last_newl_index = 0
+
     local modified_expand = expand
-    function shallowClone(original)
-        local copy = {}
-        for key, value in pairs(original) do
-            copy[key] = value
-        end
-        return copy
+    local modified_insert = {}
+    for i, v in pairs(insert) do
+        modified_insert[i] = v
     end
-
-    local modified_insert = shallowClone(insert)
-    local newl_count = 0
     local offset = 0
+    local last_pos = 0
 
-    -- logic
     while true do
-        -- break if no \n anymore
-        local new_newl_index = string.find(expand, '\n', last_newl_index + 1)
-        if not new_newl_index then break end
-        newl_count = newl_count + 1
+        local newline_pos = string.find(expand, '\n', last_pos + 1)
+        if not newline_pos then break end
 
-        -- insert the prepend and newl at the correct position
-        local insert_pos = new_newl_index + offset + 1
+        -- prepend string
+        local insert_pos = newline_pos + offset + 1
+        local prefix = (indent and '<>' or '') .. prepend
         modified_expand = string.sub(modified_expand, 1, insert_pos - 1)
-            .. (indent and '<>' or '')
-            .. prepend
+            .. prefix
             .. string.sub(modified_expand, insert_pos)
-        offset = offset + (indent and 2 or 0) + #prepend
+        offset = offset + #prefix
 
-        -- indent of course needs to be added as a dynamic function
+        -- indent node
         if indent then
-            local substring = string.sub(modified_expand, 1, insert_pos + 1)
-            local count = 0
-
-            local _, occurrences = string.gsub(substring, '<>', '')
-            count = occurrences
-            table.insert(modified_insert, count, M.leading_white_spaces(1))
+            local expand_before = string.sub(modified_expand, 1, insert_pos + 1)
+            local indent_pos = select(2, string.gsub(expand_before, '<>', ''))
+            table.insert(modified_insert, indent_pos, M.leading_white_spaces(indent_capture_idx))
         end
-
-        last_newl_index = new_newl_index
+        last_pos = newline_pos
     end
     return modified_expand, modified_insert
 end
@@ -119,7 +100,7 @@ function M.bulletpoint_snip(trigger, expand, insert, condition, priority, option
         { M.cap(1), unpack(insert) },
         condition,
         priority,
-        options
+        vim.tbl_deep_extend('keep', { indentCaptureIdx = 1 }, options or {})
     )
 end
 return M

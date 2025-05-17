@@ -35,9 +35,10 @@ function M.snip(trigger, expand, insert, condition, priority, options)
         wordTrig = true,
         blacklist = {},
         prepend = nil,
+        indentCaptureIdx = nil,
     }, options or {})
-    if options.prepend ~= nil then
-        expand, insert = M.blocktransform(expand, insert, options.prepend, true)
+    if options.prepend ~= nil or options.indentCaptureIdx ~= nil then
+        expand, insert = M.blocktransform(expand, insert, options.prepend, options.indentCaptureIdx)
     end
     return luasnip.snippet(
         {
