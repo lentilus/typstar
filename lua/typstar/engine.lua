@@ -167,6 +167,15 @@ function M.setup()
             end
         end
         luasnip.add_snippets('typst', autosnippets)
+
+        if cfg.add_undo_breakpoints then
+            vim.api.nvim_create_autocmd('User', {
+                pattern = 'LuasnipPreExpand',
+                callback = function()
+                    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<C-g>u', true, false, true), 'n', false)
+                end,
+            })
+        end
     end
 end
 

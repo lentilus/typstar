@@ -18,6 +18,7 @@ local default_config = {
     },
     snippets = {
         enable = true,
+        add_undo_breakpoints = true,
         modules = { -- enable modules from ./snippets
             'letters',
             'math',
