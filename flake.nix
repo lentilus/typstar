@@ -46,12 +46,17 @@
                   highlight = { enable = true },
                 }
 
-                require('luasnip').config.set_config({
+                local ls = require('luasnip')
+                ls.config.set_config({
                   enable_autosnippets = true,
                   store_selection_keys = "<Tab>",
                 })
 
                 require('typstar').setup()
+
+                vim.keymap.set({'n', 'i'}, '<M-t>', '<Cmd>TypstarToggleSnippets<CR>', { silent = true, noremap = true })
+                vim.keymap.set({'n', 'i'}, '<M-j>', function() ls.jump( 1) end, { silent = true, noremap = true })
+                vim.keymap.set({'n', 'i'}, '<M-k>', function() ls.jump(-1) end, { silent = true, noremap = true })
                 EOF
               '';
               plugins = [
