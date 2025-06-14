@@ -7,16 +7,9 @@ local math = helper.in_math
 local cap = helper.cap
 
 return {
-    snip('fa', 'forall ', {}, math),
-    snip('ex', 'exists ', {}, math),
+    snip('fa', 'AA ', {}, math),
+    snip('ex', 'EE ', {}, math),
     snip('ni', 'in.not ', {}, math),
-    snip('Sq', 'square', {}, math),
-
-    -- logical chunks
-    snip('fen', 'forall epsilon>>0 ', {}, math),
-    snip('fdn', 'forall delta>>0 ', {}, math),
-    snip('edn', 'exists delta>>0 ', {}, math),
-    snip('een', 'exists epsilon>>0 ', {}, math),
 
     -- boolean logic
     snip('not', 'not ', {}, math),
@@ -33,15 +26,6 @@ return {
     snip('ne', '!= ', {}, math),
     snip('ge', '>>= ', {}, math),
 
-    -- operators
-    snip('ak([^k ])', '+ <>', { cap(1) }, math, 100, { wordTrig = false }),
-    snip('sk([^k ])', '- <>', { cap(1) }, math, 100, { wordTrig = false }),
-    snip('oak', 'plus.circle ', {}, math),
-    snip('bak', 'plus.square ', {}, math),
-    snip('mak', 'plus.minus ', {}, math),
-    snip('xx', 'times ', {}, math, 900),
-    snip('oxx', 'times.circle ', {}, math),
-    snip('bxx', 'times.square ', {}, math),
     snip('ff', '(<>) / (<>) <>', { i(1, 'a'), i(2, 'b'), i(3) }, math),
 
     -- exponents
@@ -56,22 +40,14 @@ return {
     -- 'st' to '{<>} in ./visual.lua
     snip('set', '{<> | <>}', { i(1), i(2) }, math),
     snip('es', 'emptyset ', {}, math, 900),
-    snip('ses', '{emptyset} ', {}, math),
     snip('sp', 'supset ', {}, math),
     snip('sb', 'subset ', {}, math),
     snip('sep', 'supset.eq ', {}, math),
     snip('seb', 'subset.eq ', {}, math),
-    snip('nn', 'inter ', {}, math, 900),
-    snip('uu', 'union ', {}, math, 900),
-    snip('bnn', 'inter.big ', {}, math),
-    snip('buu', 'union.big ', {}, math),
-    snip('swo', 'without ', {}, math),
 
     -- misc
     snip('to', '->> ', {}, math),
     snip('mt', '|->> ', {}, math),
-    snip('Oo', 'compose ', {}, math),
-    snip('iso', 'tilde.equiv ', {}, math),
     snip('cc', 'cases(\n\t<>\n)\\', { i(1, '1') }, math),
     snip('([A-Za-z])o([A-Za-z0-9])', '<>(<>) ', { cap(1), cap(2) }, math, 100, {
         maxTrigLength = 3,
@@ -105,4 +81,7 @@ return {
         1000,
         { maxTrigLength = 25 }
     ),
+
+    -- semicolon as auto-brackets
+    snip(';(.*?);', '(<>)', {cap(1)}, math, 500, { wordTrig = false }),
 }

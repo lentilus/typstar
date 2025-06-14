@@ -106,8 +106,8 @@ end
 return {
     -- latin/greek
     snip(':([A-Za-z0-9])', '$<>$ ', { cap(1) }, markup),
-    snip(';(' .. trigger_greek .. ')', '$<>$ ', { d(1, get_greek) }, markup),
-    snip(';(' .. trigger_greek .. ')', '<>', { d(1, get_greek) }, math),
+    snip('\'(' .. trigger_greek .. ')', '$<>$ ', { d(1, get_greek) }, markup),
+    snip('\'(' .. trigger_greek .. ')', '<>', { d(1, get_greek) }, math),
 
     -- indices
     snip(
